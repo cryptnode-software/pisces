@@ -1,0 +1,2 @@
+export DB_CONNECTION='Ui78920TeL:asISHlsa90!a@tcp(localhost:13306)/mercuryprojectstore?parseTime=true'
+export DB_SUPER_CONNECTION='root:root@tcp(localhost:13306)/dev?charset=utf8&parseTime=true'

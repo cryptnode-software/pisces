@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  pisces:
+    image: pisces
+    build:
+      context: .
+    restart: unless-stopped
+    logging:
+      driver: ${GO_ENV_DOCKER_LOG_DRIVER:-json-file}
+      options:
+        tag: null
+    networks:
+      - cryptnode
+    ports:
+      - "127.0.0.1:4081:4081"
+
+    environment:
+      - APP_NAME=${APP_NAME}
+
+      - DB_SUPERUSER=${DB_SUPERUSER}
+      - DB_SUPERUSER_PW=${DB_SUPERUSER_PW}
+
+      - DB_USER=${DB_USER}
+      - DB_USER_PW=${DB_USER_PW}
+
+      - DB_CONNECTION=${DB_CONNECTION}
+      - DB_SUPER_CONNECTION=${DB_SUPER_CONNECTION}
+
+      - JWT_SECRET=${JWT_SECRET}
+      - ENV=${ENV}
+
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID}
+      - PAYPAL_SECRET_ID=${PAYPAL_SECRET_ID}
+
+networks:
+  cryptnode:
+    external:
+      name: "cryptnode"

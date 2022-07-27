@@ -1,0 +1,15 @@
+schema:
+  dialect: mysql
+  datasource: $DB_SUPER_CONNECTION
+  dir: schema
+  table: migrations_app_pisces
+app:
+  dialect: mysql
+  datasource: $DB_CONNECTION
+  dir: app
+  table: migrations_app_pisces
+seed:
+  dialect: mysql
+  datasource: $DB_CONNECTION
+  dir: seed
+  table: migrations_app_pisces_seed
