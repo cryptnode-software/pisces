@@ -155,7 +155,7 @@ func NewLogger() clib.Logger {
 		return nil
 	}
 
-	return clib.NewZapper(environ)
+	return clib.NewZapper(clib.Environment(environ))
 }
 
 //NewEnv returns a new environment pre-populated with the provided logger
@@ -167,7 +167,7 @@ func NewEnv(logger clib.Logger) *clib.Env {
 	}
 
 	result := &clib.Env{
-		Environment: environ,
+		Environment: clib.Environment(environ),
 		Log:         logger,
 	}
 
@@ -188,7 +188,7 @@ func NewEnv(logger clib.Logger) *clib.Env {
 			SecretID: secret,
 		}
 
-		switch environ {
+		switch result.Environment {
 		case clib.EnvProd:
 			result.PaypalEnv.Host = paylib.APIBaseLive
 		default:
@@ -215,6 +215,20 @@ func NewEnv(logger clib.Logger) *clib.Env {
 			log.Fatal(err)
 		}
 		result.DB = sql
+	}
+
+	//upload config
+	{
+		result.Upload = new(clib.UploadEnv)
+
+		switch result.Environment {
+		case clib.EnvDev:
+			result.Upload.Type = clib.UploadTypeLinode
+			result.Upload.Linode = &clib.LinodeEnv{}
+		default:
+			result.Upload.Type = clib.UploadTypeMemory
+		}
+
 	}
 
 	return result

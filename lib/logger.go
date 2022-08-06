@@ -23,13 +23,13 @@ type Logger interface {
 
 // Zapper struct to implement the logger interface
 type Zapper struct {
-	env string
+	env Environment
 
 	logger *zap.SugaredLogger
 }
 
 // NewZapper instantiates a new Zap logger
-func NewZapper(env string) Logger {
+func NewZapper(env Environment) Logger {
 	var logger *zap.Logger
 	var err error
 

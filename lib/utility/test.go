@@ -27,7 +27,7 @@ func NewLogger() clib.Logger {
 		log.Fatalf("environment is not provided: please provide %s variable", env)
 	}
 
-	return clib.NewZapper(env)
+	return clib.NewZapper(clib.Environment(env))
 }
 
 //NewEnv returns a new environment pre-populated with the provided logger
@@ -38,7 +38,7 @@ func NewEnv(logger clib.Logger) *clib.Env {
 	}
 
 	result := &clib.Env{
-		Environment: env,
+		Environment: clib.Environment(env),
 		Log:         logger,
 	}
 
@@ -59,7 +59,7 @@ func NewEnv(logger clib.Logger) *clib.Env {
 			SecretID: secret,
 		}
 
-		switch env {
+		switch result.Environment {
 		case clib.EnvProd:
 			result.PaypalEnv.Host = paylib.APIBaseLive
 		default:
