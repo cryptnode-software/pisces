@@ -9,10 +9,11 @@ import (
 
 //Services ...
 type Services struct {
-	OrderService   OrderService
-	PaypalService  PaypalService
-	AuthService    AuthService
 	ProductService ProductService
+	UploadService  UploadService
+	PaypalService  PaypalService
+	OrderService   OrderService
+	AuthService    AuthService
 	CartService    CartService
 }
 

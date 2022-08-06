@@ -10,6 +10,7 @@ import (
 	order "github.com/cryptnode-software/pisces/lib/orders"
 	"github.com/cryptnode-software/pisces/lib/paypal"
 	"github.com/cryptnode-software/pisces/lib/product"
+	upload "github.com/cryptnode-software/pisces/lib/upload"
 	"github.com/gocraft/dbr/v2"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -261,5 +262,16 @@ func NewCartService(env *clib.Env) clib.CartService {
 	if err != nil {
 		panic(err)
 	}
+	return service
+}
+
+//NewUploadService will return a `upload` service on success,
+//otherwise it will panic and close the application
+func NewUploadService(env *clib.Env) clib.UploadService {
+	service, err := upload.NewService(env)
+	if err != nil {
+		panic(err)
+	}
+
 	return service
 }

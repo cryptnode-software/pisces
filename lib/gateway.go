@@ -1,8 +1,10 @@
 package lib
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/cryptnode-software/pisces/lib/errors"
 	proto "go.buf.build/grpc/go/thenewlebowski/pisces/general/v1"
@@ -359,6 +361,62 @@ func (g *Gateway) CheckJWT(ctx context.Context, req *proto.JWT) (*proto.JWT, err
 	}
 
 	return req, nil
+}
+
+//Upload is Pisces generic upload method this will be configurable in the future
+//for now it uploads the chunked data to a linode bucket by default the file
+//will be avaliable for public consumption
+func (g *Gateway) Upload(stream proto.Pisces_UploadServer) (err error) {
+	ctx := context.Background()
+
+	req, err := stream.Recv()
+	if err != nil {
+		return
+	}
+
+	file := new(File)
+
+	file.ID = FileID(req.GetInfo().GetId())
+	file.Type = req.GetInfo().Type
+	file.Data = new(bytes.Buffer)
+	file.Name = req.GetInfo().Id
+
+	size := 0
+
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+
+		chunk := req.GetChunkData()
+		size += len(chunk)
+
+		if _, err = file.Data.Write(chunk); err != nil {
+			return err
+		}
+	}
+
+	url, err := g.services.UploadService.Save(ctx, file)
+
+	if err != nil {
+		return
+	}
+
+	res := new(proto.UploadResponse)
+
+	res.Size = uint32(size)
+	res.Url = url
+
+	if err = stream.SendAndClose(res); err != nil {
+		return
+	}
+
+	return
 }
 
 //AuthenticateAdmin is a export by pass to allow us to directly communicate
