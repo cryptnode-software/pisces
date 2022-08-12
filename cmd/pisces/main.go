@@ -4,6 +4,12 @@ import (
 	"context"
 	"net/http"
 
+	// "github.com/aws/aws-sdk-go-v3/aws/session"
+	// "github.com/aws/aws-sdk-go-v3/service/s3"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+
 	clib "github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/auth"
 	"github.com/cryptnode-software/pisces/lib/cart"
@@ -44,6 +50,11 @@ const (
 	envPaypalSecretID string = "PAYPAL_SECRET_ID"
 
 	envJWTSecret string = "JWT_SECRET"
+
+	envS3Bucket    string = "S3_BUCKET"
+	envS3AccessKey string = "AWS_ACCESS_KEY_ID"
+	envS3SecretKey string = "AWS_SECRET_ACCESS_KEY"
+	envS3Region    string = "AWS_REGION"
 )
 
 var (
@@ -217,6 +228,24 @@ func NewEnv(logger clib.Logger) *clib.Env {
 		result.DB = sql
 	}
 
+	//aws config
+	{
+		config := new(clib.AWSEnv)
+		if config.Region = os.Getenv(envS3Region); config.Region == "" {
+			log.Fatalf("%s not, and required for s3 configuration", envS3Region)
+		}
+		if config.AccessKey = os.Getenv(envS3AccessKey); config.AccessKey == "" {
+			log.Fatalf("%s not set and required for s3 configuration", envS3AccessKey)
+		}
+		if config.Bucket = os.Getenv(envS3Bucket); config.Bucket == "" {
+			log.Fatalf("%s not set and required for s3 configuration", envS3Bucket)
+		}
+		if config.SecretKey = os.Getenv(envS3SecretKey); config.SecretKey == "" {
+			log.Fatalf("%s not set and required for s3 configuration", envS3SecretKey)
+		}
+		result.AWSEnv = config
+	}
+
 	//upload config
 	{
 		result.Upload = new(clib.UploadEnv)
@@ -277,6 +306,20 @@ func NewCartService(env *clib.Env) clib.CartService {
 		panic(err)
 	}
 	return service
+}
+
+func NewS3Client(env *clib.Env) (client *s3.Client) {
+	client = s3.NewFromConfig(aws.Config{
+		Region: env.AWSEnv.Region,
+		Credentials: aws.CredentialsProviderFunc(func(ctx context.Context) (creds aws.Credentials, err error) {
+			creds = aws.Credentials{
+				AccessKeyID:     env.AWSEnv.AccessKey,
+				SecretAccessKey: env.AWSEnv.SecretKey,
+			}
+			return
+		}),
+	})
+	return
 }
 
 //NewUploadService will return a `upload` service on success,

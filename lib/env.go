@@ -26,6 +26,7 @@ type Env struct {
 	Environment Environment
 	PaypalEnv   *PaypalEnv
 	JWTEnv      *JWTEnv
+	AWSEnv      *AWSEnv
 }
 
 //PaypalEnv the structure for the paypal environment
@@ -90,4 +91,11 @@ func (env *LinodeEnv) Validate() error {
 	}
 
 	return nil
+}
+
+type AWSEnv struct {
+	AccessKey string
+	SecretKey string
+	Bucket    string
+	Region    string
 }

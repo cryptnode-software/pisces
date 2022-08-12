@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/cryptnode-software/pisces/lib/errors"
 	proto "go.buf.build/grpc/go/thenewlebowski/pisces/general/v1"
 )
@@ -326,6 +327,27 @@ func (g *Gateway) GetInquires(ctx context.Context, req *proto.GetInquiresRequest
 	return &proto.GetInquiresResponse{
 		Inquires: convertInquiresToProto(inquires),
 	}, nil
+}
+
+func (g *Gateway) GetSignedURL(ctx context.Context, req *proto.GetSignedURLRequest) (res *proto.GetSignedURLResponse, err error) {
+
+	res = new(proto.UploadResponse)
+
+	{
+		client := s3.NewPresignClient(g.services.S3Client)
+
+		req, err := client.PresignUploadPart(ctx, &s3.UploadPartInput{
+			Bucket: &g.Env.AWSEnv.Bucket,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		res.Url = req.URL
+	}
+
+	return
 }
 
 //GeneratePaypalClientToken generates a returns a unique paypal client token in order to create

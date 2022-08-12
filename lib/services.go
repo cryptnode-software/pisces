@@ -3,6 +3,7 @@ package lib
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/cryptnode-software/pisces/lib/errors"
 	"github.com/gocraft/dbr/v2"
 )
@@ -15,6 +16,7 @@ type Services struct {
 	OrderService   OrderService
 	AuthService    AuthService
 	CartService    CartService
+	S3Client       *s3.Client
 }
 
 //We can put methods that interact with multiple services here as it is an intermediary.
