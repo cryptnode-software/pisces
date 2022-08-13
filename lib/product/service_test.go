@@ -1,10 +1,11 @@
-package product
+package product_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/cryptnode-software/pisces/lib"
+	"github.com/cryptnode-software/pisces/lib/product"
 	"github.com/cryptnode-software/pisces/lib/utility"
 	"github.com/stretchr/testify/assert"
 )
@@ -12,7 +13,7 @@ import (
 var (
 	env = utility.NewEnv(utility.NewLogger())
 
-	service, err = NewService(env)
+	service, err = product.NewService(env)
 
 	ctx = context.Background()
 )

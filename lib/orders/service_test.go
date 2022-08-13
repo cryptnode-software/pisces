@@ -1,16 +1,17 @@
-package orders
+package orders_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/cryptnode-software/pisces/lib"
+	"github.com/cryptnode-software/pisces/lib/orders"
 	"github.com/cryptnode-software/pisces/lib/utility"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	service, err = NewService(utility.NewEnv(utility.NewLogger()))
+	service, err = orders.NewService(utility.NewEnv(utility.NewLogger()))
 
 	inquiry = &lib.Inquiry{
 		Description: "some test description",

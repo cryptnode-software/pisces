@@ -7,16 +7,8 @@ import (
 	// "github.com/aws/aws-sdk-go-v3/aws/session"
 	// "github.com/aws/aws-sdk-go-v3/service/s3"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-
 	clib "github.com/cryptnode-software/pisces/lib"
-	"github.com/cryptnode-software/pisces/lib/auth"
-	"github.com/cryptnode-software/pisces/lib/cart"
-	order "github.com/cryptnode-software/pisces/lib/orders"
-	"github.com/cryptnode-software/pisces/lib/paypal"
-	"github.com/cryptnode-software/pisces/lib/product"
-	upload "github.com/cryptnode-software/pisces/lib/upload"
+	"github.com/cryptnode-software/pisces/lib/utility"
 	"github.com/gocraft/dbr/v2"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -83,15 +75,7 @@ func main() {
 	flag.Parse()
 	environment := NewEnv(NewLogger())
 
-	services := &clib.Services{
-		ProductService: NewProductService(environment),
-		PaypalService:  NewPaypalService(environment),
-		OrderService:   NewOrderService(environment),
-		AuthService:    NewAuthService(environment),
-		CartService:    NewCartService(environment),
-	}
-
-	gw, err := clib.NewGateway(environment, services)
+	gw, err := clib.NewGateway(environment, utility.Services(environment))
 	if err != nil {
 		panic(err)
 	}
@@ -261,74 +245,4 @@ func NewEnv(logger clib.Logger) *clib.Env {
 	}
 
 	return result
-}
-
-//NewPaypalService returns a service that satisfies the clib.PaypalService interface
-func NewPaypalService(env *clib.Env) clib.PaypalService {
-	paypal, err := paypal.NewService(env)
-	if err != nil {
-		panic(err)
-	}
-	return paypal
-}
-
-//NewAuthService returns a service that satisfies the clib.AuthService interface
-func NewAuthService(env *clib.Env) clib.AuthService {
-	service, err := auth.NewService(env)
-	if err != nil {
-		panic(err)
-	}
-	return service
-}
-
-//NewOrderService returns a service that satisfies the clib.OrderService
-func NewOrderService(env *clib.Env) clib.OrderService {
-	order, err := order.NewService(env)
-	if err != nil {
-		panic(err)
-	}
-	return order
-}
-
-//NewProductService returns a new product service
-func NewProductService(env *clib.Env) clib.ProductService {
-	service, err := product.NewService(env)
-	if err != nil {
-		panic(err)
-	}
-	return service
-}
-
-//NewCartService returns a new cart service
-func NewCartService(env *clib.Env) clib.CartService {
-	service, err := cart.NewService(env)
-	if err != nil {
-		panic(err)
-	}
-	return service
-}
-
-func NewS3Client(env *clib.Env) (client *s3.Client) {
-	client = s3.NewFromConfig(aws.Config{
-		Region: env.AWSEnv.Region,
-		Credentials: aws.CredentialsProviderFunc(func(ctx context.Context) (creds aws.Credentials, err error) {
-			creds = aws.Credentials{
-				AccessKeyID:     env.AWSEnv.AccessKey,
-				SecretAccessKey: env.AWSEnv.SecretKey,
-			}
-			return
-		}),
-	})
-	return
-}
-
-//NewUploadService will return a `upload` service on success,
-//otherwise it will panic and close the application
-func NewUploadService(env *clib.Env) clib.UploadService {
-	service, err := upload.NewService(env)
-	if err != nil {
-		panic(err)
-	}
-
-	return service
 }

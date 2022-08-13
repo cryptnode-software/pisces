@@ -1,10 +1,11 @@
-package auth
+package auth_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/cryptnode-software/pisces/lib"
+	"github.com/cryptnode-software/pisces/lib/auth"
 	"github.com/cryptnode-software/pisces/lib/utility"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/hlandau/passlib.v1"
@@ -28,7 +29,7 @@ var (
 )
 
 var env = utility.NewEnv(utility.NewLogger())
-var service, err = NewService(env)
+var service, err = auth.NewService(env)
 
 func TestGenerateAndDecodeJWT(t *testing.T) {
 	ctx := context.Background()
@@ -59,7 +60,7 @@ func TestGenerateAndDecodeJWT(t *testing.T) {
 }
 
 func TestLoginUser(t *testing.T) {
-	service.repo = &mockrepo{}
+	service.SetRepo(&mockrepo{})
 
 	req := &lib.LoginRequest{
 		Password: unhashedpassword,
@@ -81,7 +82,7 @@ func TestLoginUser(t *testing.T) {
 }
 
 func TestFailedLogin(t *testing.T) {
-	service.repo = &mockrepo{}
+	service.SetRepo(&mockrepo{})
 
 	req := &lib.LoginRequest{
 		Password: "fakepassword",
@@ -99,7 +100,7 @@ func TestFailedLogin(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	service.repo = &mockrepo{}
+	service.SetRepo(&mockrepo{})
 	ctx := context.Background()
 
 	user, err := service.CreateUser(ctx, user, unhashedpassword)

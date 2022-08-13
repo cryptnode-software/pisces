@@ -26,7 +26,7 @@ var (
 //Login handles the functionality to properly check and login a user
 type Service struct {
 	*lib.Env
-	repo repoi
+	repo RepoI
 }
 
 //NewService creates a new paypal service that satisfies the PaypalService interface
@@ -37,6 +37,11 @@ func NewService(env *lib.Env) (*Service, error) {
 			env.DB,
 		},
 	}, nil
+}
+
+func (service *Service) SetRepo(repo RepoI) error {
+	service.repo = repo
+	return nil
 }
 
 //Login accepts a login response with a valid username and password if they match then the jwt
@@ -136,7 +141,7 @@ func (s *Service) AuthenticateAdmin(ctx context.Context) (*lib.User, error) {
 	return user, nil
 }
 
-type repoi interface {
+type RepoI interface {
 	CreateUser(ctx context.Context, user *lib.User, password string) (*lib.User, error)
 	FindUser(ctx context.Context, username, email string) (*lib.User, error)
 	Login(context.Context, *lib.LoginRequest) (*lib.User, error)

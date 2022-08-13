@@ -1,17 +1,18 @@
-package paypal
+package paypal_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/cryptnode-software/pisces/lib"
+	"github.com/cryptnode-software/pisces/lib/paypal"
 	"github.com/cryptnode-software/pisces/lib/utility"
 )
 
 var (
 	env = utility.NewEnv(utility.NewLogger())
 
-	service, err = NewService(env)
+	service, err = paypal.NewService(env)
 
 	ctx = context.Background()
 
