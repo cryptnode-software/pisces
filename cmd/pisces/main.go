@@ -230,19 +230,5 @@ func NewEnv(logger clib.Logger) *clib.Env {
 		result.AWSEnv = config
 	}
 
-	//upload config
-	{
-		result.Upload = new(clib.UploadEnv)
-
-		switch result.Environment {
-		case clib.EnvDev:
-			result.Upload.Type = clib.UploadTypeLinode
-			result.Upload.Linode = &clib.LinodeEnv{}
-		default:
-			result.Upload.Type = clib.UploadTypeMemory
-		}
-
-	}
-
 	return result
 }

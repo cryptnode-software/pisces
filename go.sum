@@ -380,6 +380,8 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 go.buf.build/grpc/go/thenewlebowski/pisces v1.4.4 h1:aA/jqVhpV82Q5jx43x3dXvnXdCLJGsvrmyhXy4eLK9c=
 go.buf.build/grpc/go/thenewlebowski/pisces v1.4.4/go.mod h1:xPMQDKZFcsDsG6AQ6xYsLCg/F9LGbd3nSkw4cIn0Ghg=
+go.buf.build/grpc/go/thenewlebowski/pisces v1.4.5 h1:ny5FiFI6l+tLKmSq4rQQcS6+q5f0U/YRKsaGYm/VHEk=
+go.buf.build/grpc/go/thenewlebowski/pisces v1.4.5/go.mod h1:xPMQDKZFcsDsG6AQ6xYsLCg/F9LGbd3nSkw4cIn0Ghg=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738/go.mod h1:dnLIgRNXwCJa5e+c6mIZCrds/GIG4ncV9HhK5PX7jPg=
 go.opencensus.io v0.20.1/go.mod h1:6WKK9ahsWS3RSO+PY9ZHZUfv2irvY6gN279GOPZjmmk=

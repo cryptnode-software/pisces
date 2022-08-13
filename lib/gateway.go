@@ -332,10 +332,23 @@ func (g *Gateway) GetSignedURL(ctx context.Context, req *proto.GetSignedURLReque
 	res = new(proto.GetSignedURLResponse)
 
 	{
-		client := s3.NewPresignClient(g.services.S3Client)
+		client := s3.NewPresignClient(g.services.S3Client,
+			s3.WithPresignExpires(3600),
+		)
+
+		output, err := g.services.S3Client.CreateMultipartUpload(ctx, &s3.CreateMultipartUploadInput{
+			Bucket: &g.Env.AWSEnv.Bucket,
+			Key:    &req.FileName,
+		})
+
+		if err != nil {
+			return nil, err
+		}
 
 		req, err := client.PresignUploadPart(ctx, &s3.UploadPartInput{
-			Bucket: &g.Env.AWSEnv.Bucket,
+			Bucket:   &g.Env.AWSEnv.Bucket,
+			UploadId: output.UploadId,
+			Key:      &req.FileName,
 		})
 
 		if err != nil {
