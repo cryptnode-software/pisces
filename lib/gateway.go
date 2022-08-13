@@ -337,6 +337,7 @@ func (g *Gateway) GetSignedURL(ctx context.Context, req *proto.GetSignedURLReque
 		)
 
 		output, err := g.services.S3Client.CreateMultipartUpload(ctx, &s3.CreateMultipartUploadInput{
+			ACL:    types.ObjectCannedACLPublicRead,
 			Bucket: &g.Env.AWSEnv.Bucket,
 			Key:    &req.FileName,
 		})

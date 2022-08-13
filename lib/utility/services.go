@@ -2,7 +2,6 @@ package utility
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -73,10 +72,11 @@ func cartservice(env *lib.Env) lib.CartService {
 func s3client(env *lib.Env) (client *s3.Client) {
 	client = s3.NewFromConfig(aws.Config{
 		Region: env.AWSEnv.Region,
-		EndpointResolver: aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-			return aws.Endpoint{
-				URL: fmt.Sprintf("https://%s.linodeobjects.com", env.AWSEnv.Region),
-			}, nil
+		EndpointResolver: aws.EndpointResolverFunc(func(service, region string) (result aws.Endpoint, err error) {
+			if env.AWSEnv.Endpoint != nil {
+				result.URL = *env.AWSEnv.Endpoint
+			}
+			return
 		}),
 		Credentials: aws.CredentialsProviderFunc(func(ctx context.Context) (creds aws.Credentials, err error) {
 			creds = aws.Credentials{

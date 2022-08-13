@@ -23,6 +23,7 @@ const (
 	envS3AccessKey string = "AWS_ACCESS_KEY_ID"
 	envS3SecretKey string = "AWS_SECRET_ACCESS_KEY"
 	envS3Region    string = "AWS_REGION"
+	envS3Endpoint  string = "AWS_ENDPOINT"
 )
 
 //NewLogger returns a new logger based off the current environment
@@ -105,6 +106,12 @@ func NewEnv(logger clib.Logger) *clib.Env {
 		}
 		if config.SecretKey = os.Getenv(envS3SecretKey); config.SecretKey == "" {
 			log.Fatalf("%s not set and required for s3 configuration", envS3SecretKey)
+		}
+
+		//optional aws config
+		endpoint := os.Getenv(envS3Endpoint)
+		if config.Endpoint = &endpoint; config.Endpoint == nil {
+			logger.Error("%s is not set, defaulting to aws endpoint", envS3Endpoint)
 		}
 		result.AWSEnv = config
 	}
