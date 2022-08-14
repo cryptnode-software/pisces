@@ -17,7 +17,7 @@ var (
 	inquiry = &lib.Inquiry{
 		Description: "some test description",
 		Email:       "test@test.com",
-		Number:      "1112223333",
+		Number:      "111-222-3333",
 		FirstName:   "first_name",
 		LastName:    "last_name",
 	}
@@ -49,13 +49,13 @@ func TestOrderFunctionality(t *testing.T) {
 		return
 	}
 
-	if order.InquiryID <= 0 {
+	if order.Inquiry == nil {
 		inquiry, err = service.SaveInquiry(ctx, inquiry)
 		if err != nil {
 			t.Error(err)
 		}
 
-		order.InquiryID = inquiry.ID
+		order.Inquiry = inquiry
 	}
 
 	new, err := service.SaveOrder(ctx, order)
@@ -66,7 +66,7 @@ func TestOrderFunctionality(t *testing.T) {
 
 	//synthetically replace id to omit it during
 	//asserting equality
-	// order.ID = new.ID
+	order.ID = new.ID
 
 	assert.Equal(t, order, new)
 
@@ -91,12 +91,28 @@ func TestSaveOrder(t *testing.T) {
 		order    lib.Order
 	}{
 		{
-			expected: &lib.Order{},
+			expected: &lib.Order{
+				PaymentMethod: lib.PaymentMethodNotImplemented,
+				Status:        lib.OrderStatusNotImplemented,
+				Inquiry: &lib.Inquiry{
+					Description: "Magna ipsum culpa labore pariatur elit commodo consequat esse est.",
+					Email:       "test.user@test.io",
+					Number:      "000-000-0000",
+					FirstName:   "test",
+					LastName:    "user",
+				},
+			},
 			order: lib.Order{
 				PaymentMethod: lib.PaymentMethodNotImplemented,
 				Status:        lib.OrderStatusNotImplemented,
 				Due:           time.Now().Add(60 * 24),
-				InquiryID:     1,
+				Inquiry: &lib.Inquiry{
+					Description: "Magna ipsum culpa labore pariatur elit commodo consequat esse est.",
+					Email:       "test.user@test.io",
+					Number:      "000-000-0000",
+					FirstName:   "test",
+					LastName:    "user",
+				},
 			},
 		},
 	}
@@ -108,6 +124,11 @@ func TestSaveOrder(t *testing.T) {
 			t.Error(err)
 			return
 		}
+
+		table.expected.Inquiry.Model = order.Inquiry.Model
+		table.expected.InquiryID = order.InquiryID
+		table.expected.Model = order.Model
+		table.expected.Due = order.Due
 
 		assert.Equal(t, table.expected, order)
 	}

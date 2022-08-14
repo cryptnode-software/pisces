@@ -52,7 +52,7 @@ func (g *Gateway) SaveOrder(ctx context.Context, req *proto.SaveOrderRequest) (r
 	res = new(proto.SaveOrderResponse)
 	order := convertOrder(req.Order)
 
-	if order.InquiryID == 0 {
+	if order.Inquiry == nil {
 		return nil, &errors.ErrInvalidRequest{
 			Fields: map[string]string{
 				"reason": "an inquiry is required to make a request please include the inquiry id",

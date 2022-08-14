@@ -62,7 +62,7 @@ func (s *Service) GetInquiry(ctx context.Context, id int64) (*lib.Inquiry, error
 func (s *Service) SaveOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
 
 	//inquiry should be required to create/update a order
-	if order.InquiryID == 0 {
+	if order.Inquiry == nil {
 		return nil, &errors.ErrNoOrderInquiryProvided{
 			OrderID: order.ID.String(),
 		}
@@ -83,7 +83,7 @@ func (s *Service) SaveOrder(ctx context.Context, order *lib.Order) (*lib.Order, 
 //less then 0, we can catch it) create a new inquiry, otherwise update with the id that
 //is provided.
 func (s *Service) SaveInquiry(ctx context.Context, inquiry *lib.Inquiry) (*lib.Inquiry, error) {
-	if inquiry.ID <= 0 {
+	if inquiry.ID == uuid.Nil {
 		return s.repo.CreateInquiry(ctx, inquiry)
 	}
 
@@ -129,15 +129,23 @@ func (r *repo) GetInquiry(ctx context.Context, id int64) (inquiry *lib.Inquiry, 
 func (r *repo) CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
 	// sess := r.NewSession(nil)
 
-	r.DB.Save(order)
+	err := r.DB.Save(order).Error
 
 	// tx.
 
 	// result, err := sess.InsertInto(tables.orders).
-	// 	Pair("payment_method", order.PaymentMethod).
-	// 	Pair("inquiry_id", order.InquiryID).
-	// 	Pair("status", order.Status).
-	// 	Pair("ext_id", order.ExtID).
+	// 	Pair("payment_method", order.Paymen_, err := sess.Update(tables.inquires).
+	// 	Set("description", inquiry.Description).
+	// 	Set("first_name", inquiry.FirstName).
+	// 	Set("last_name", inquiry.LastName).
+	// 	Set("number", inquiry.Number).
+	// 	Set("email", inquiry.Email).
+	// 	Where("id = ?", inquiry.ID).
+	// 	ExecContext(ctx)
+
+	// if err != nil {
+	// 	return nil, err
+	// }
 	// 	Pair("due", order.Due).
 	// 	ExecContext(ctx)
 
@@ -161,7 +169,7 @@ func (r *repo) CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, e
 	// 	return nil, err
 	// }
 
-	return order, nil
+	return order, err
 }
 
 func (r *repo) UpdateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
@@ -244,45 +252,29 @@ func (r *repo) GetInquires(ctx context.Context, conditions *lib.GetInquiryCondit
 }
 
 func (r *repo) CreateInquiry(ctx context.Context, inquiry *lib.Inquiry) (*lib.Inquiry, error) {
-	sess := r.NewSession(nil)
 
-	result, err := sess.InsertInto(tables.inquires).
-		Pair("description", inquiry.Description).
-		Pair("first_name", inquiry.FirstName).
-		Pair("last_name", inquiry.LastName).
-		Pair("number", inquiry.Number).
-		Pair("email", inquiry.Email).
-		ExecContext(ctx)
+	err := r.DB.Save(inquiry).Error
 
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	inquiry.ID = id
-
-	return inquiry, nil
+	return inquiry, err
 }
 
 func (r *repo) UpdateInquiry(ctx context.Context, inquiry *lib.Inquiry) (*lib.Inquiry, error) {
-	sess := r.NewSession(nil)
+	// sess := r.NewSession(nil)
 
-	_, err := sess.Update(tables.inquires).
-		Set("description", inquiry.Description).
-		Set("first_name", inquiry.FirstName).
-		Set("last_name", inquiry.LastName).
-		Set("number", inquiry.Number).
-		Set("email", inquiry.Email).
-		Where("id = ?", inquiry.ID).
-		ExecContext(ctx)
+	err := r.DB.Save(inquiry).Error
 
-	if err != nil {
-		return nil, err
-	}
+	// _, err := sess.Update(tables.inquires).
+	// 	Set("description", inquiry.Description).
+	// 	Set("first_name", inquiry.FirstName).
+	// 	Set("last_name", inquiry.LastName).
+	// 	Set("number", inquiry.Number).
+	// 	Set("email", inquiry.Email).
+	// 	Where("id = ?", inquiry.ID).
+	// 	ExecContext(ctx)
 
-	return inquiry, nil
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return inquiry, err
 }

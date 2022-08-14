@@ -106,6 +106,7 @@ func NewEnv(logger clib.Logger) *clib.Env {
 		result.GormDB = db
 
 		db.AutoMigrate(
+			new(lib.Inquiry),
 			new(lib.Order),
 		)
 

@@ -19,7 +19,9 @@ var (
 
 	order = &lib.Order{
 		Total: 40.00,
-		ID:    id,
+		Model: lib.Model{
+			ID: id,
+		},
 	}
 
 	ctx = context.Background()

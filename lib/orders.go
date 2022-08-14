@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 //OrderService represents the OrderService interface
@@ -47,20 +46,14 @@ type OrderID string
 
 //Order the general structure of an order
 type Order struct {
-	ID            uuid.UUID `gorm:"type:varchar(36);primary_key;default:(uuid());not null"`
 	PaymentMethod PaymentMethod
 	Status        OrderStatus
 	Total         float32
 	ExtID         string
 	Due           time.Time
-	InquiryID     int64
-	gorm.Model
-}
-
-func (order *Order) BeforeCreate(tx *gorm.DB) error {
-	id, err := uuid.NewRandom()
-	order.ID = id
-	return err
+	Inquiry       *Inquiry `gorm:"references:ID"`
+	InquiryID     uuid.UUID
+	Model
 }
 
 //PaymentMethod the primitive data type for all of
@@ -78,13 +71,13 @@ const (
 
 //Inquiry the structure contact info of a customer
 type Inquiry struct {
-	Description string   `json:"description"`
-	Attachments []string `json:"attachments"`
-	FirstName   string   `json:"first_name"`
-	LastName    string   `json:"last_name"`
-	Number      string   `json:"number"`
-	Email       string   `json:"email"`
-	ID          int64    `json:"id"`
+	Description string
+	// Attachments []string
+	FirstName string
+	LastName  string
+	Number    string
+	Email     string
+	Model
 }
 
 //OrderStatus this is the primitive datatype for OrderStatus' for
