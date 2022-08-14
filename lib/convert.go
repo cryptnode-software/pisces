@@ -43,11 +43,14 @@ func convertOrderToProto(order *Order) *proto.Order {
 		ExtId:         order.ExtID,
 		Total:         order.Total,
 		Due:           order.Due,
-		Id:            order.ID,
+		Id:            string(*order.ID),
 	}
 }
 
 func convertOrder(order *proto.Order) *Order {
+
+	id := OrderID(order.Id)
+
 	return &Order{
 		PaymentMethod: convertPaymentMethod(order.PaymentMethod),
 		Status:        convertOrderStatus(order.Status),
@@ -55,7 +58,7 @@ func convertOrder(order *proto.Order) *Order {
 		ExtID:         order.ExtId,
 		Total:         order.Total,
 		Due:           order.Due,
-		ID:            order.Id,
+		ID:            &id,
 	}
 
 }
@@ -64,7 +67,7 @@ func convertCart(cart *proto.Cart) (result *Cart) {
 	result = new(Cart)
 
 	result.Contents = make([]*CartContents, len(cart.Contents))
-	result.OrderID = cart.OrderId
+	result.OrderID = OrderID(cart.OrderId)
 
 	for i, product := range cart.Contents {
 		result.Contents[i] = &CartContents{
@@ -81,7 +84,7 @@ func convertCartToProto(cart *Cart) (result *proto.Cart) {
 	result = new(proto.Cart)
 
 	result.Contents = make([]*proto.CartContents, len(cart.Contents))
-	result.OrderId = cart.OrderID
+	result.OrderId = string(cart.OrderID)
 
 	for i, product := range cart.Contents {
 

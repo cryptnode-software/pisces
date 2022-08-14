@@ -37,6 +37,8 @@ const (
 	OrderSortByDueAscending OrdersSortBy = "DUE_ASCENDING"
 )
 
+type OrderID string
+
 //Order the general structure of an order
 type Order struct {
 	PaymentMethod PaymentMethod `json:"payment_method"`
@@ -45,7 +47,7 @@ type Order struct {
 	ExtID         string        `json:"ext_id"`
 	Total         float32       `json:"total"`
 	Due           string        `json:"due"`
-	ID            int64         `json:"id"`
+	ID            *OrderID      `json:"id"`
 }
 
 //PaymentMethod the primitive data type for all of

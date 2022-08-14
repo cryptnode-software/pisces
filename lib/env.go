@@ -2,6 +2,7 @@ package lib
 
 import (
 	"github.com/gocraft/dbr/v2"
+	"gorm.io/gorm"
 )
 
 type Environment string
@@ -19,6 +20,7 @@ const (
 
 // Env ...
 type Env struct {
+	GormDB      *gorm.DB
 	DB          *dbr.Connection
 	Log         Logger
 	Environment Environment

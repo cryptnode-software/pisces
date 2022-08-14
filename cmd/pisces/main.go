@@ -16,6 +16,8 @@ import (
 	paylib "github.com/plutov/paypal"
 	proto "go.buf.build/grpc/go/thenewlebowski/pisces/general/v1"
 	"google.golang.org/grpc"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -207,11 +209,32 @@ func NewEnv(logger clib.Logger) *clib.Env {
 
 	//database config
 	{
-		sql, err := dbr.Open("mysql", os.Getenv(envDatabaseURL), nil)
+
+		db, err := gorm.Open(mysql.New(mysql.Config{
+			DSN:                       os.Getenv(envDatabaseURL),
+			SkipInitializeWithVersion: false,
+			DisableDatetimePrecision:  true,
+			DontSupportRenameIndex:    true,
+			DontSupportRenameColumn:   true,
+			DefaultStringSize:         256,
+		}))
+
 		if err != nil {
 			log.Fatal(err)
+			return nil
 		}
+
+		result.GormDB = db
+
+		sql, err := dbr.Open("mysql", os.Getenv(envDatabaseURL), nil)
+
+		if err != nil {
+			log.Fatal(err)
+			return nil
+		}
+
 		result.DB = sql
+
 	}
 
 	//aws config

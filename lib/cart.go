@@ -31,7 +31,7 @@ const (
 //should be able to make an Cart w/o pairing it to an order.
 type Cart struct {
 	Contents []*CartContents
-	OrderID  int64
+	OrderID  OrderID
 }
 
 //CartContents is the internal structure of a cart. This

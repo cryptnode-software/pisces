@@ -88,7 +88,7 @@ func (g *Gateway) SaveCart(ctx context.Context, req *proto.SaveCartRequest) (res
 		}
 	}
 
-	if req.Cart.OrderId == 0 {
+	if req.Cart.OrderId == "" {
 		return nil, &errors.ErrInvalidRequest{
 			Fields: map[string]string{
 				"reason": "no order id was provided, in order for a cart to be properly created it needs to have an associated order id",

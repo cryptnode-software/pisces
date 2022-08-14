@@ -7,6 +7,7 @@ import (
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/paypal"
 	"github.com/cryptnode-software/pisces/lib/utility"
+	"github.com/google/uuid"
 )
 
 var (
@@ -14,12 +15,14 @@ var (
 
 	service, err = paypal.NewService(env)
 
-	ctx = context.Background()
+	id = lib.OrderID(uuid.New().String())
 
 	order = &lib.Order{
-		ID:    1,
 		Total: 40.00,
+		ID:    &id,
 	}
+
+	ctx = context.Background()
 )
 
 func TestGenerateClientSideToken(t *testing.T) {

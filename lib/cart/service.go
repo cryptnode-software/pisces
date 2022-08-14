@@ -133,7 +133,7 @@ func (repo *repo) GetCart(ctx context.Context, order *lib.Order) (cart *lib.Cart
 
 	_, err = sess.Select("*").From(tables.cart).Where("order_id = ?", order.ID).LoadContext(ctx, &cart.Contents)
 
-	cart.OrderID = order.ID
+	cart.OrderID = *order.ID
 
 	return
 }

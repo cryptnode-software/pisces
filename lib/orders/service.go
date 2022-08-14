@@ -62,12 +62,12 @@ func (s *Service) SaveOrder(ctx context.Context, order *lib.Order) (*lib.Order, 
 	//inquiry should be required to create/update a order
 	if order.InquiryID == 0 {
 		return nil, &errors.ErrNoOrderInquiryProvided{
-			OrderID: order.ID,
+			OrderID: string(*order.ID),
 		}
 	}
 
 	//create new order
-	if order.ID == 0 {
+	if order.ID == nil {
 		return s.repo.CreateOrder(ctx, order)
 	}
 

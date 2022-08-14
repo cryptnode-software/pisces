@@ -3,9 +3,9 @@ package paypal
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/plutov/paypal"
@@ -42,10 +42,14 @@ func NewService(env *lib.Env) (*Service, error) {
 //CreateOrder creates a paypal order
 func (service *Service) CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
 
+	if order.ID == nil {
+		return nil, errors.New("no local order id associated with paypal order")
+	}
+
 	porder, err := service.client.CreateOrder(
 		paypal.OrderIntentAuthorize, []paypal.PurchaseUnitRequest{
 			{
-				ReferenceID: strconv.FormatInt(order.ID, 10),
+				ReferenceID: string(*order.ID),
 				Amount: &paypal.PurchaseUnitAmount{
 					Currency: "USD",
 					Value:    fmt.Sprintf("%.2f", order.Total),

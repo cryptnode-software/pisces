@@ -2,6 +2,8 @@ module github.com/cryptnode-software/pisces
 
 go 1.18
 
+replace go.buf.build/grpc/go/thenewlebowski/pisces => ../cryptnode-commons/gen/proto/go/pisces-api/
+
 require (
 	github.com/aws/aws-sdk-go-v2 v1.16.11
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.27.5
@@ -15,8 +17,10 @@ require (
 	github.com/stretchr/testify v1.7.0
 	go.buf.build/grpc/go/thenewlebowski/pisces v1.4.8
 	go.uber.org/zap v1.19.0
-	google.golang.org/grpc v1.40.0
+	google.golang.org/grpc v1.48.0
 	gopkg.in/hlandau/passlib.v1 v1.0.11
+	gorm.io/driver/mysql v1.3.5
+	gorm.io/gorm v1.23.8
 )
 
 require (
@@ -33,6 +37,8 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/klauspost/compress v1.11.7 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
