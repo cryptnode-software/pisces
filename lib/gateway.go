@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/cryptnode-software/pisces/lib/errors"
+	"github.com/google/uuid"
 	proto "go.buf.build/grpc/go/thenewlebowski/pisces/general/v1"
 )
 
@@ -334,12 +335,14 @@ func (g *Gateway) StartUpload(ctx context.Context, req *proto.StartUploadRequest
 
 	{
 
+		uuid := uuid.New().String() + req.Key
+
 		client := s3.NewPresignClient(g.services.S3Client)
 
 		req, err := client.PresignPutObject(ctx, &s3.PutObjectInput{
 			ACL:    types.ObjectCannedACLPublicRead,
 			Bucket: &g.Env.AWSEnv.Bucket,
-			Key:    &req.Key,
+			Key:    &uuid,
 		},
 		)
 
@@ -347,7 +350,8 @@ func (g *Gateway) StartUpload(ctx context.Context, req *proto.StartUploadRequest
 			return nil, err
 		}
 
-		res.Url = req.URL
+		res.PresignedUrl = req.URL
+		res.Url = fmt.Sprintf("https://%s.%s.linodeobjects.com", g.Env.AWSEnv.Bucket, g.Env.AWSEnv.Region)
 
 	}
 
