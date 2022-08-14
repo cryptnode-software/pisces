@@ -62,7 +62,7 @@ var (
 		"/pisces.Pisces/SaveCart":                  true,
 		"/pisces.Pisces/Login":                     true,
 		"/pisces.Pisces/CreateUser":                true,
-		"/pisces.Pisces/GetSignedURL":              true,
+		"/pisces.Pisces/StartUpload":               true,
 	}
 
 	admin = map[string]bool{

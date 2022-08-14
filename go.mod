@@ -13,7 +13,7 @@ require (
 	github.com/kr/pretty v0.2.1
 	github.com/plutov/paypal v2.0.5+incompatible
 	github.com/stretchr/testify v1.7.0
-	go.buf.build/grpc/go/thenewlebowski/pisces v1.4.5
+	go.buf.build/grpc/go/thenewlebowski/pisces v1.4.6
 	go.uber.org/zap v1.19.0
 	google.golang.org/grpc v1.40.0
 	gopkg.in/hlandau/passlib.v1 v1.0.11

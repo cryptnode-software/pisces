@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/cryptnode-software/pisces/lib/errors"
 	proto "go.buf.build/grpc/go/thenewlebowski/pisces/general/v1"
 )
@@ -327,36 +328,27 @@ func (g *Gateway) GetInquires(ctx context.Context, req *proto.GetInquiresRequest
 	}, nil
 }
 
-func (g *Gateway) GetSignedURL(ctx context.Context, req *proto.GetSignedURLRequest) (res *proto.GetSignedURLResponse, err error) {
+func (g *Gateway) StartUpload(ctx context.Context, req *proto.StartUploadRequest) (res *proto.StartUploadResponse, err error) {
 
-	res = new(proto.GetSignedURLResponse)
+	res = new(proto.StartUploadResponse)
 
 	{
-		client := s3.NewPresignClient(g.services.S3Client,
-			s3.WithPresignExpires(3600),
-		)
 
-		output, err := g.services.S3Client.CreateMultipartUpload(ctx, &s3.CreateMultipartUploadInput{
+		client := s3.NewPresignClient(g.services.S3Client)
+
+		req, err := client.PresignPutObject(ctx, &s3.PutObjectInput{
 			ACL:    types.ObjectCannedACLPublicRead,
 			Bucket: &g.Env.AWSEnv.Bucket,
-			Key:    &req.FileName,
-		})
-
-		if err != nil {
-			return nil, err
-		}
-
-		req, err := client.PresignUploadPart(ctx, &s3.UploadPartInput{
-			Bucket:   &g.Env.AWSEnv.Bucket,
-			UploadId: output.UploadId,
-			Key:      &req.FileName,
-		})
+			Key:    &req.Key,
+		},
+		)
 
 		if err != nil {
 			return nil, err
 		}
 
 		res.Url = req.URL
+
 	}
 
 	return

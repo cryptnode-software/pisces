@@ -23,11 +23,11 @@ func TestGetSignedURL(t *testing.T) {
 
 	ctx := context.Background()
 
-	req := &v1.GetSignedURLRequest{
-		FileName: "test.png",
+	req := &v1.StartUploadRequest{
+		Key: "test.png",
 	}
 
-	res, err := gateway.GetSignedURL(ctx, req)
+	res, err := gateway.StartUpload(ctx, req)
 
 	if err != nil {
 		t.Error(err)
