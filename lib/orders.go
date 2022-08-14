@@ -1,6 +1,12 @@
 package lib
 
-import "context"
+import (
+	"context"
+	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 //OrderService represents the OrderService interface
 type OrderService interface {
@@ -41,13 +47,20 @@ type OrderID string
 
 //Order the general structure of an order
 type Order struct {
-	PaymentMethod PaymentMethod `json:"payment_method"`
-	InquiryID     int64         `json:"inquiry_id"`
-	Status        OrderStatus   `json:"status"`
-	ExtID         string        `json:"ext_id"`
-	Total         float32       `json:"total"`
-	Due           string        `json:"due"`
-	ID            *OrderID      `json:"id"`
+	ID            uuid.UUID `gorm:"type:varchar(36);primary_key;default:(uuid());not null"`
+	PaymentMethod PaymentMethod
+	Status        OrderStatus
+	Total         float32
+	ExtID         string
+	Due           time.Time
+	InquiryID     int64
+	gorm.Model
+}
+
+func (order *Order) BeforeCreate(tx *gorm.DB) error {
+	id, err := uuid.NewRandom()
+	order.ID = id
+	return err
 }
 
 //PaymentMethod the primitive data type for all of

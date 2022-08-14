@@ -108,7 +108,7 @@ func (repo *repo) AddProduct(ctx context.Context, order *lib.Order, product *lib
 	if rows, err := sess.Select("*").From(tables.cart).Where("order_id = ?", order.ID).Where("product_id = ?", product.ID).ReturnInt64(); rows >= 0 || err == nil {
 
 		_, err := sess.Update(tables.cart).
-			Where("order_id = ?", order.ID).
+			// Where("order_id = ?", order.ID).
 			Where("product_id = ?", product.ID).
 			Set("quantity", quantity).
 			ExecContext(ctx)
@@ -116,7 +116,7 @@ func (repo *repo) AddProduct(ctx context.Context, order *lib.Order, product *lib
 		return err
 	}
 	_, err := sess.InsertInto(tables.cart).
-		Pair("order_id", order.ID).
+		// Pair("order_id", order.ID).
 		Pair("product_id", product.ID).
 		Pair("quantity", quantity).
 		ExecContext(ctx)
@@ -128,12 +128,12 @@ func (repo *repo) AddProduct(ctx context.Context, order *lib.Order, product *lib
 //GetCart accepts an entire order and returns any products and the quantity that have been
 //added to the order.
 func (repo *repo) GetCart(ctx context.Context, order *lib.Order) (cart *lib.Cart, err error) {
-	sess := repo.NewSession(nil)
-	cart = new(lib.Cart)
+	// sess := repo.NewSession(nil)
+	// cart = new(lib.Cart)
 
-	_, err = sess.Select("*").From(tables.cart).Where("order_id = ?", order.ID).LoadContext(ctx, &cart.Contents)
+	// _, err = sess.Select("*").From(tables.cart).Where("order_id = ?", order.ID).LoadContext(ctx, &cart.Contents)
 
-	cart.OrderID = *order.ID
+	// cart.OrderID = *order.ID
 
 	return
 }

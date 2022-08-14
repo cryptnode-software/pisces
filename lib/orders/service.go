@@ -2,11 +2,12 @@ package orders
 
 import (
 	"context"
-	"strings"
 
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/errors"
 	"github.com/gocraft/dbr/v2"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 var (
@@ -34,6 +35,7 @@ func NewService(env *lib.Env) (lib.OrderService, error) {
 		env,
 		&repo{
 			env.DB,
+			env.GormDB,
 		},
 	}, nil
 }
@@ -62,12 +64,12 @@ func (s *Service) SaveOrder(ctx context.Context, order *lib.Order) (*lib.Order, 
 	//inquiry should be required to create/update a order
 	if order.InquiryID == 0 {
 		return nil, &errors.ErrNoOrderInquiryProvided{
-			OrderID: string(*order.ID),
+			OrderID: order.ID.String(),
 		}
 	}
 
 	//create new order
-	if order.ID == nil {
+	if order.ID == uuid.Nil {
 		return s.repo.CreateOrder(ctx, order)
 	}
 
@@ -113,6 +115,7 @@ type repoi interface {
 
 type repo struct {
 	*dbr.Connection
+	*gorm.DB
 }
 
 func (r *repo) GetInquiry(ctx context.Context, id int64) (inquiry *lib.Inquiry, err error) {
@@ -124,35 +127,39 @@ func (r *repo) GetInquiry(ctx context.Context, id int64) (inquiry *lib.Inquiry, 
 }
 
 func (r *repo) CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
-	sess := r.NewSession(nil)
+	// sess := r.NewSession(nil)
 
-	result, err := sess.InsertInto(tables.orders).
-		Pair("payment_method", order.PaymentMethod).
-		Pair("inquiry_id", order.InquiryID).
-		Pair("status", order.Status).
-		Pair("ext_id", order.ExtID).
-		Pair("due", order.Due).
-		ExecContext(ctx)
+	r.DB.Save(order)
 
-	if err != nil {
-		return nil, err
-	}
+	// tx.
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
+	// result, err := sess.InsertInto(tables.orders).
+	// 	Pair("payment_method", order.PaymentMethod).
+	// 	Pair("inquiry_id", order.InquiryID).
+	// 	Pair("status", order.Status).
+	// 	Pair("ext_id", order.ExtID).
+	// 	Pair("due", order.Due).
+	// 	ExecContext(ctx)
 
-	order.ID = id
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	_, err = sess.Update(tables.inquires).
-		Where("id = ?", order.InquiryID).
-		Set("order_id", order.ID).
-		ExecContext(ctx)
+	// id, err := result.LastInsertId()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if err != nil {
-		return nil, err
-	}
+	// order.ID = id
+
+	// _, err = sess.Update(tables.inquires).
+	// 	Where("id = ?", order.InquiryID).
+	// 	Set("order_id", order.ID).
+	// 	ExecContext(ctx)
+
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return order, nil
 }
@@ -161,7 +168,7 @@ func (r *repo) UpdateOrder(ctx context.Context, order *lib.Order) (*lib.Order, e
 	sess := r.NewSession(nil)
 
 	_, err := sess.Update(tables.orders).
-		Where("id = ?", order.ID).
+		// Where("id = ?", order.ID).
 		Set("payment_method", order.PaymentMethod).
 		Set("status", order.Status).
 		Set("ext_id", order.ExtID).
@@ -195,10 +202,10 @@ func (r *repo) GetOrders(ctx context.Context, conditions *lib.OrderConditions) (
 		return nil, err
 	}
 
-	for i, order := range result {
-		result[i].Due = strings.Replace(order.Due, "T", " ", 1)
-		result[i].Due = strings.Replace(order.Due, "Z", " ", 1)
-	}
+	// for i, order := range result {
+	// result[i].Due = strings.Replace(order.Due, "T", " ", 1)
+	// result[i].Due = strings.Replace(order.Due, "Z", " ", 1)
+	// }
 
 	return result, nil
 }
@@ -208,8 +215,8 @@ func (r *repo) GetOrder(ctx context.Context, id int64) (order *lib.Order, err er
 
 	err = sess.Select("*").From(tables.orders).Where("id = ?", id).LoadOne(&order)
 
-	order.Due = strings.Replace(order.Due, "T", " ", 1)
-	order.Due = strings.Replace(order.Due, "Z", " ", 1)
+	// order.Due = strings.Replace(order.Due, "T", " ", 1)
+	// order.Due = strings.Replace(order.Due, "Z", " ", 1)
 
 	return
 }

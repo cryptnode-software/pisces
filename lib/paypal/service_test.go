@@ -15,11 +15,11 @@ var (
 
 	service, err = paypal.NewService(env)
 
-	id = lib.OrderID(uuid.New().String())
+	id = uuid.New()
 
 	order = &lib.Order{
 		Total: 40.00,
-		ID:    &id,
+		ID:    id,
 	}
 
 	ctx = context.Background()

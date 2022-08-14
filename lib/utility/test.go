@@ -4,10 +4,13 @@ import (
 	"log"
 	"os"
 
+	"github.com/cryptnode-software/pisces/lib"
 	clib "github.com/cryptnode-software/pisces/lib"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gocraft/dbr/v2"
 	paylib "github.com/plutov/paypal"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 const (
@@ -85,6 +88,27 @@ func NewEnv(logger clib.Logger) *clib.Env {
 	}
 
 	{
+
+		db, err := gorm.Open(mysql.New(mysql.Config{
+			DSN:                       os.Getenv(envDatabaseURL),
+			SkipInitializeWithVersion: false,
+			DisableDatetimePrecision:  true,
+			DontSupportRenameIndex:    true,
+			DontSupportRenameColumn:   true,
+			DefaultStringSize:         256,
+		}))
+
+		if err != nil {
+			log.Fatal(err)
+			return nil
+		}
+
+		result.GormDB = db
+
+		db.AutoMigrate(
+			new(lib.Order),
+		)
+
 		sql, err := dbr.Open("mysql", os.Getenv(envDatabaseURL), nil)
 		if err != nil {
 			log.Fatal(err)

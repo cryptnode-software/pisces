@@ -3,6 +3,7 @@ package orders_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/orders"
@@ -24,7 +25,7 @@ var (
 	order = &lib.Order{
 		PaymentMethod: lib.PaymentMethodNotImplemented,
 		Status:        lib.OrderStatusNotImplemented,
-		Due:           "2022-07-26",
+		Due:           time.Now().Add(60 * 24),
 	}
 
 	ctx = context.Background()
@@ -65,7 +66,7 @@ func TestOrderFunctionality(t *testing.T) {
 
 	//synthetically replace id to omit it during
 	//asserting equality
-	order.ID = new.ID
+	// order.ID = new.ID
 
 	assert.Equal(t, order, new)
 
@@ -77,4 +78,37 @@ func TestOrderFunctionality(t *testing.T) {
 	}
 
 	assert.Equal(t, new, order)
+}
+
+func TestSaveOrder(t *testing.T) {
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	tables := []struct {
+		expected *lib.Order
+		order    lib.Order
+	}{
+		{
+			expected: &lib.Order{},
+			order: lib.Order{
+				PaymentMethod: lib.PaymentMethodNotImplemented,
+				Status:        lib.OrderStatusNotImplemented,
+				Due:           time.Now().Add(60 * 24),
+				InquiryID:     1,
+			},
+		},
+	}
+
+	for _, table := range tables {
+		order, err := service.SaveOrder(ctx, &table.order)
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		assert.Equal(t, table.expected, order)
+	}
 }

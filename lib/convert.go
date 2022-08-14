@@ -42,14 +42,14 @@ func convertOrderToProto(order *Order) *proto.Order {
 		InquiryId:     order.InquiryID,
 		ExtId:         order.ExtID,
 		Total:         order.Total,
-		Due:           order.Due,
-		Id:            string(*order.ID),
+		// Due:           order.Due,
+		// Id: string(*order.ID),
 	}
 }
 
 func convertOrder(order *proto.Order) *Order {
 
-	id := OrderID(order.Id)
+	// id := OrderID(order.Id)
 
 	return &Order{
 		PaymentMethod: convertPaymentMethod(order.PaymentMethod),
@@ -57,8 +57,8 @@ func convertOrder(order *proto.Order) *Order {
 		InquiryID:     order.InquiryId,
 		ExtID:         order.ExtId,
 		Total:         order.Total,
-		Due:           order.Due,
-		ID:            &id,
+		// Due:           order.Due,
+		// ID: &id,
 	}
 
 }

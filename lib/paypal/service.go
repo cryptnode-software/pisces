@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
+
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/plutov/paypal"
 )
@@ -42,14 +44,14 @@ func NewService(env *lib.Env) (*Service, error) {
 //CreateOrder creates a paypal order
 func (service *Service) CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
 
-	if order.ID == nil {
+	if order.ID == uuid.Nil {
 		return nil, errors.New("no local order id associated with paypal order")
 	}
 
 	porder, err := service.client.CreateOrder(
 		paypal.OrderIntentAuthorize, []paypal.PurchaseUnitRequest{
 			{
-				ReferenceID: string(*order.ID),
+				ReferenceID: order.ID.String(),
 				Amount: &paypal.PurchaseUnitAmount{
 					Currency: "USD",
 					Value:    fmt.Sprintf("%.2f", order.Total),
