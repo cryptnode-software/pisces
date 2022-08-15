@@ -105,7 +105,12 @@ func (g *Gateway) SaveCart(ctx context.Context, req *proto.SaveCartRequest) (res
 
 //AuthorizeOrder handles the authorization of the provided order
 func (g *Gateway) AuthorizeOrder(ctx context.Context, req *proto.AuthorizeOrderRequest) (res *proto.AuthorizeOrderResponse, err error) {
-	order, err := g.services.OrderService.GetOrder(ctx, req.OrderId)
+	uuid, err := uuid.Parse(req.OrderId)
+	if err != nil {
+		return
+	}
+
+	order, err := g.services.OrderService.GetOrder(ctx, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +118,7 @@ func (g *Gateway) AuthorizeOrder(ctx context.Context, req *proto.AuthorizeOrderR
 	if order == nil {
 		return nil, &errors.ErrInvalidRequest{
 			Fields: map[string]string{
-				"reason": fmt.Sprintf("order not found w/ order id %d", req.OrderId),
+				"reason": fmt.Sprintf("order not found w/ order id %s", req.OrderId),
 			},
 		}
 	}
@@ -121,7 +126,7 @@ func (g *Gateway) AuthorizeOrder(ctx context.Context, req *proto.AuthorizeOrderR
 	if order.Status != OrderStatusUserPending {
 		return nil, &errors.ErrInvalidRequest{
 			Fields: map[string]string{
-				"reason": fmt.Sprintf("order w/ the order id %d isn't in a state of user_pending", req.OrderId),
+				"reason": fmt.Sprintf("order w/ the order id %s isn't in a state of user_pending", req.OrderId),
 			},
 		}
 	}
@@ -131,7 +136,7 @@ func (g *Gateway) AuthorizeOrder(ctx context.Context, req *proto.AuthorizeOrderR
 	if cart == nil || len(cart.Contents) <= 0 {
 		return nil, &errors.ErrInvalidRequest{
 			Fields: map[string]string{
-				"reason": fmt.Sprintf("order w/ the order id %d doesn't have a cart associated with it, please create one", req.OrderId),
+				"reason": fmt.Sprintf("order w/ the order id %s doesn't have a cart associated with it, please create one", req.OrderId),
 			},
 		}
 	}
@@ -139,7 +144,7 @@ func (g *Gateway) AuthorizeOrder(ctx context.Context, req *proto.AuthorizeOrderR
 	if order.ExtID != "" {
 		return nil, &errors.ErrInvalidRequest{
 			Fields: map[string]string{
-				"reason": fmt.Sprintf("order w/ the order id %d already has an external id and has already been associated with a purchase", req.OrderId),
+				"reason": fmt.Sprintf("order w/ the order id %s already has an external id and has already been associated with a purchase", req.OrderId),
 			},
 		}
 	}
@@ -236,8 +241,8 @@ func (g *Gateway) SaveInquiry(ctx context.Context, req *proto.Inquiry) (*proto.I
 //GetOrders gathers all of the orders and sorts them depending on the request received
 func (g *Gateway) GetOrders(ctx context.Context, req *proto.GetOrdersRequest) (res *proto.GetOrdersResponse, err error) {
 
-	if req.OrderId != 0 {
-		order, err := g.services.OrderService.GetOrder(ctx, req.OrderId)
+	if uuid, err := uuid.Parse(req.OrderId); err == nil {
+		order, err := g.services.OrderService.GetOrder(ctx, uuid)
 		if err != nil {
 			return nil, err
 		}
@@ -296,9 +301,9 @@ func (g *Gateway) GetOrders(ctx context.Context, req *proto.GetOrdersRequest) (r
 //the original rpc call
 func (g *Gateway) GetInquires(ctx context.Context, req *proto.GetInquiresRequest) (res *proto.GetInquiresResponse, err error) {
 
-	if req.InquiryId != 0 {
+	if uuid, err := uuid.Parse(req.InquiryId); err == nil {
 
-		inqury, err := g.services.OrderService.GetInquiry(ctx, req.InquiryId)
+		inqury, err := g.services.OrderService.GetInquiry(ctx, uuid)
 		if err != nil {
 			return nil, err
 		}

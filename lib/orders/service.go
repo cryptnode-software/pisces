@@ -47,13 +47,13 @@ func (s *Service) GetOrders(ctx context.Context, conditions *lib.OrderConditions
 
 //GetOrder returns a specific order and any information that is associated with
 //it
-func (s *Service) GetOrder(ctx context.Context, id int64) (*lib.Order, error) {
+func (s *Service) GetOrder(ctx context.Context, id uuid.UUID) (*lib.Order, error) {
 	return s.repo.GetOrder(ctx, id)
 }
 
 //GetInquiry returns a specific inquiry based on the id provided, if there is
 //no inquiry found an exception will be raised.
-func (s *Service) GetInquiry(ctx context.Context, id int64) (*lib.Inquiry, error) {
+func (s *Service) GetInquiry(ctx context.Context, id uuid.UUID) (*lib.Inquiry, error) {
 	return s.repo.GetInquiry(ctx, id)
 }
 
@@ -62,7 +62,7 @@ func (s *Service) GetInquiry(ctx context.Context, id int64) (*lib.Inquiry, error
 func (s *Service) SaveOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
 
 	//inquiry should be required to create/update a order
-	if order.Inquiry == nil {
+	if order.Inquiry == nil || order.InquiryID == uuid.Nil {
 		return nil, &errors.ErrNoOrderInquiryProvided{
 			OrderID: order.ID.String(),
 		}
@@ -108,8 +108,8 @@ type repoi interface {
 	CreateInquiry(ctx context.Context, inquiry *lib.Inquiry) (*lib.Inquiry, error)
 	CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error)
 	UpdateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error)
-	GetInquiry(ctx context.Context, id int64) (*lib.Inquiry, error)
-	GetOrder(ctx context.Context, id int64) (*lib.Order, error)
+	GetInquiry(ctx context.Context, id uuid.UUID) (*lib.Inquiry, error)
+	GetOrder(ctx context.Context, id uuid.UUID) (*lib.Order, error)
 	GetOrders(context.Context, *lib.OrderConditions) ([]*lib.Order, error)
 }
 
@@ -118,7 +118,7 @@ type repo struct {
 	*gorm.DB
 }
 
-func (r *repo) GetInquiry(ctx context.Context, id int64) (inquiry *lib.Inquiry, err error) {
+func (r *repo) GetInquiry(ctx context.Context, id uuid.UUID) (inquiry *lib.Inquiry, err error) {
 	sess := r.NewSession(nil)
 
 	err = sess.Select("*").From(tables.inquires).Where("id = ?", id).LoadOneContext(ctx, &inquiry)
@@ -218,7 +218,7 @@ func (r *repo) GetOrders(ctx context.Context, conditions *lib.OrderConditions) (
 	return result, nil
 }
 
-func (r *repo) GetOrder(ctx context.Context, id int64) (order *lib.Order, err error) {
+func (r *repo) GetOrder(ctx context.Context, id uuid.UUID) (order *lib.Order, err error) {
 	sess := r.NewSession(nil)
 
 	err = sess.Select("*").From(tables.orders).Where("id = ?", id).LoadOne(&order)

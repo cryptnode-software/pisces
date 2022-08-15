@@ -11,9 +11,9 @@ import (
 type OrderService interface {
 	GetInquires(ctx context.Context, conditions *GetInquiryConditions) ([]*Inquiry, error)
 	GetOrders(context.Context, *OrderConditions) ([]*Order, error)
-	GetInquiry(ctx context.Context, id int64) (*Inquiry, error)
+	GetInquiry(ctx context.Context, id uuid.UUID) (*Inquiry, error)
 	SaveInquiry(context.Context, *Inquiry) (*Inquiry, error)
-	GetOrder(ctx context.Context, id int64) (*Order, error)
+	GetOrder(ctx context.Context, id uuid.UUID) (*Order, error)
 	ArchiveOrder(context.Context, *Order) (*Order, error)
 	SaveOrder(context.Context, *Order) (*Order, error)
 }

@@ -2,6 +2,7 @@ package orders_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -43,41 +44,40 @@ func TestInquiryFunctionality(t *testing.T) {
 	assert.Equal(t, inquiry, new)
 }
 
-func TestOrderFunctionality(t *testing.T) {
-	if err != nil {
-		t.Error(err)
-		return
+func TestSaveInquiry(t *testing.T) {
+	tables := []struct {
+		inquiry  lib.Inquiry
+		expected lib.Inquiry
+	}{
+		{
+			expected: lib.Inquiry{
+				Description: "Magna ipsum culpa labore pariatur elit commodo consequat esse est.",
+				Email:       "test.user@test.io",
+				Number:      "000-000-0000",
+				FirstName:   "test",
+				LastName:    "user",
+			},
+			inquiry: lib.Inquiry{
+				Description: "Magna ipsum culpa labore pariatur elit commodo consequat esse est.",
+				Email:       "test.user@test.io",
+				Number:      "000-000-0000",
+				FirstName:   "test",
+				LastName:    "user",
+			},
+		},
 	}
 
-	if order.Inquiry == nil {
-		inquiry, err = service.SaveInquiry(ctx, inquiry)
+	for _, table := range tables {
+		inquiry, err := service.SaveInquiry(ctx, &table.inquiry)
 		if err != nil {
 			t.Error(err)
+			continue
 		}
 
-		order.Inquiry = inquiry
+		table.expected.Model = inquiry.Model
+
+		assert.Equal(t, table.expected, *inquiry)
 	}
-
-	new, err := service.SaveOrder(ctx, order)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	//synthetically replace id to omit it during
-	//asserting equality
-	order.ID = new.ID
-
-	assert.Equal(t, order, new)
-
-	order, err := service.SaveOrder(ctx, new)
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	assert.Equal(t, new, order)
 }
 
 func TestSaveOrder(t *testing.T) {
@@ -131,5 +131,56 @@ func TestSaveOrder(t *testing.T) {
 		table.expected.Due = order.Due
 
 		assert.Equal(t, table.expected, order)
+	}
+}
+
+func TestFailSaveOrder(t *testing.T) {
+	tables := []struct {
+		order lib.Order
+	}{
+		{
+			order: lib.Order{
+				PaymentMethod: lib.PaymentMethodNotImplemented,
+				Status:        lib.OrderStatusNotImplemented,
+				Due:           time.Now().Add(60 * 24),
+			},
+		},
+	}
+
+	for _, table := range tables {
+		_, err := service.SaveOrder(ctx, &table.order)
+		if err == nil {
+			t.Error(errors.New("order successfully saved when it was suppose to fail"))
+		}
+	}
+}
+
+func TestGetOrders(t *testing.T) {
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	tables := []struct {
+		order lib.Order
+	}{
+		{
+			order: lib.Order{},
+		},
+	}
+
+	for _, table := range tables {
+		expected := table.order
+
+		order, err := service.SaveOrder(ctx, &table.order)
+
+		if err != nil {
+			t.Error(err)
+			continue
+		}
+
+		expected.Model = order.Model
+
+		order, err = service.GetOrder(ctx, order.ID)
 	}
 }
