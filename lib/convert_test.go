@@ -81,6 +81,68 @@ func TestConvertOrdersToProto(t *testing.T) {
 	}
 }
 
+func TestConvertOrderToProto(t *testing.T) {
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	tables := []struct {
+		order    *Order
+		expected *proto.Order
+	}{
+		{
+			order: &Order{
+				PaymentMethod: PaymentMethodPaypal,
+				Inquiry: &Inquiry{
+					Description: "Quis incididunt aliqua ex duis proident sunt sit.",
+					Email:       "test.user@test.io",
+					Number:      "000-000-0000",
+					LastName:    "user",
+					FirstName:   "test",
+					Model: Model{
+						ID: id,
+					},
+				},
+				Status: OrderStatusUserPending,
+				Model: Model{
+					ID: id,
+				},
+				Due:   due,
+				Total: 40.00,
+			},
+			expected: &proto.Order{
+				PaymentMethod: proto.PaymentMethod_PaymentMethodPaypal,
+				Status:        proto.OrderStatus_UserPending,
+				Inquiry: &proto.Inquiry{
+					Body:        "Quis incididunt aliqua ex duis proident sunt sit.",
+					Email:       "test.user@test.io",
+					PhoneNumber: "000-000-0000",
+					Id:          id.String(),
+					LastName:    "user",
+					FirstName:   "test",
+				},
+				InquiryId: uuid.Nil.String(),
+				Id:        id.String(),
+				Due:       protodue,
+				Total:     40,
+			},
+		},
+	}
+
+	for _, table := range tables {
+		order, err := convertOrderToProto(table.order)
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		table.expected.Due = order.Due
+
+		assert.Equal(t, table.expected, order)
+	}
+}
+
 func TestConvertOrder(t *testing.T) {
 
 	if err != nil {
@@ -147,11 +209,80 @@ func TestConvertOrder(t *testing.T) {
 
 func TestConvertInquiry(t *testing.T) {
 
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	tables := []struct {
+		expected *Inquiry
+		inquiry  *proto.Inquiry
+	}{
+		{
+			expected: &Inquiry{
+				Description: "Quis incididunt aliqua ex duis proident sunt sit.",
+				Email:       "test.user@test.io",
+				Number:      "000-000-0000",
+				LastName:    "user",
+				FirstName:   "test",
+				Model: Model{
+					ID: id,
+				},
+			},
+			inquiry: &proto.Inquiry{
+				Body:        "Quis incididunt aliqua ex duis proident sunt sit.",
+				Email:       "test.user@test.io",
+				PhoneNumber: "000-000-0000",
+				Id:          id.String(),
+				LastName:    "user",
+				FirstName:   "test",
+			},
+		},
+	}
+
+	for _, table := range tables {
+		inquiry := convertInquiry(table.inquiry)
+
+		assert.Equal(t, table.expected, inquiry)
+	}
 }
 
-func TestConvertOrderToProto(t *testing.T) {
-
-}
 func TestConvertInquiryToProto(t *testing.T) {
 
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	tables := []struct {
+		inquiry  *Inquiry
+		expected *proto.Inquiry
+	}{
+		{
+			inquiry: &Inquiry{
+				Description: "Quis incididunt aliqua ex duis proident sunt sit.",
+				Email:       "test.user@test.io",
+				Number:      "000-000-0000",
+				LastName:    "user",
+				FirstName:   "test",
+				Model: Model{
+					ID: id,
+				},
+			},
+			expected: &proto.Inquiry{
+				Body:        "Quis incididunt aliqua ex duis proident sunt sit.",
+				Email:       "test.user@test.io",
+				PhoneNumber: "000-000-0000",
+				Id:          id.String(),
+				LastName:    "user",
+				FirstName:   "test",
+			},
+		},
+	}
+
+	for _, table := range tables {
+		inquiry := convertInquiryToProto(table.inquiry)
+
+		assert.Equal(t, table.expected, inquiry)
+	}
 }
