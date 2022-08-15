@@ -1,17 +1,23 @@
 package lib
 
 import (
-	"github.com/aws/smithy-go/time"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/google/uuid"
 	proto "go.buf.build/grpc/go/thenewlebowski/pisces/general/v1"
 )
 
-func convertOrdersToProto(orders []*Order) []*proto.Order {
-	result := make([]*proto.Order, len(orders))
+func convertOrdersToProto(orders []*Order) (result []*proto.Order, err error) {
+	result = make([]*proto.Order, len(orders))
+
 	for i, order := range orders {
-		result[i] = convertOrderToProto(order)
+		o, err := convertOrderToProto(order)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = o
 	}
-	return result
+
+	return
 }
 
 func convertInquiryToProto(info *Inquiry) *proto.Inquiry {
@@ -41,22 +47,38 @@ func convertInquiry(info *proto.Inquiry) (inquiry *Inquiry) {
 	return
 }
 
-func convertOrderToProto(order *Order) *proto.Order {
+func convertOrderToProto(order *Order) (result *proto.Order, err error) {
+	result = new(proto.Order)
 
-	return &proto.Order{
-		PaymentMethod: convertPaymentMethodToProto(order.PaymentMethod),
-		Status:        convertOrderStatusToProto(order.Status),
-		InquiryId:     order.InquiryID.String(),
-		Due:           order.Due.String(),
-		Id:            order.ID.String(),
-		ExtId:         order.ExtID,
-		Total:         order.Total,
+	result.PaymentMethod = convertPaymentMethodToProto(order.PaymentMethod)
+	result.Status = convertOrderStatusToProto(order.Status)
+	result.Inquiry = convertInquiryToProto(order.Inquiry)
+	result.InquiryId = order.InquiryID.String()
+	result.Id = order.ID.String()
+	result.ExtId = order.ExtID
+	result.Total = order.Total
+
+	due, err := ptypes.TimestampProto(order.Due)
+
+	if err != nil {
+		return nil, err
 	}
+
+	result.Due = due
+
+	return
 }
 
-func convertOrder(order *proto.Order) (result *Order) {
+func convertOrder(order *proto.Order) (result *Order, err error) {
 
 	result = new(Order)
+
+	due, err := ptypes.Timestamp(order.Due)
+	if err != nil {
+		return nil, err
+	}
+
+	result.Due = due
 
 	if uuid, err := uuid.Parse(order.InquiryId); err == nil {
 		result.InquiryID = uuid
@@ -70,8 +92,9 @@ func convertOrder(order *proto.Order) (result *Order) {
 	result.Status = convertOrderStatus(order.Status)
 	result.ExtID = order.ExtId
 	result.Total = order.Total
-	if due, err := time.ParseDateTime(order.Due); err == nil {
-		result.Due = due
+
+	if order.Inquiry != nil {
+		result.Inquiry = convertInquiry(order.Inquiry)
 	}
 
 	return

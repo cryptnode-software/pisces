@@ -50,7 +50,11 @@ type Gateway struct {
 //SaveOrder creates an order that
 func (g *Gateway) SaveOrder(ctx context.Context, req *proto.SaveOrderRequest) (res *proto.SaveOrderResponse, err error) {
 	res = new(proto.SaveOrderResponse)
-	order := convertOrder(req.Order)
+
+	order, err := convertOrder(req.Order)
+	if err != nil {
+		return nil, err
+	}
 
 	if order.Inquiry == nil {
 		return nil, &errors.ErrInvalidRequest{
@@ -71,9 +75,15 @@ func (g *Gateway) SaveOrder(ctx context.Context, req *proto.SaveOrderRequest) (r
 		g.Env.Log.Error(err.Error())
 		return
 	}
+
 	order.Total = total
 
-	res.Order = convertOrderToProto(order)
+	o, err := convertOrderToProto(order)
+	if err != nil {
+		return
+	}
+
+	res.Order = o
 	return
 }
 
@@ -173,8 +183,13 @@ func (g *Gateway) AuthorizeOrder(ctx context.Context, req *proto.AuthorizeOrderR
 		return nil, err
 	}
 
+	o, err := convertOrderToProto(order)
+	if err != nil {
+		return nil, err
+	}
+
 	res = &proto.AuthorizeOrderResponse{
-		Order: convertOrderToProto(order),
+		Order: o,
 	}
 
 	return
@@ -254,8 +269,13 @@ func (g *Gateway) GetOrders(ctx context.Context, req *proto.GetOrdersRequest) (r
 
 		order.Total = total
 
+		o, err := convertOrderToProto(order)
+		if err != nil {
+			return nil, err
+		}
+
 		res = &proto.GetOrdersResponse{
-			Order: convertOrderToProto(order),
+			Order: o,
 		}
 
 		return res, nil
@@ -290,8 +310,13 @@ func (g *Gateway) GetOrders(ctx context.Context, req *proto.GetOrdersRequest) (r
 		orders[i].Total = total
 	}
 
+	o, err := convertOrdersToProto(orders)
+	if err != nil {
+		return nil, err
+	}
+
 	res = &proto.GetOrdersResponse{
-		Orders: convertOrdersToProto(orders),
+		Orders: o,
 	}
 
 	return

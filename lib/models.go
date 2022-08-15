@@ -10,8 +10,8 @@ type Model struct {
 	gorm.Model
 }
 
-func (order *Model) BeforeCreate(tx *gorm.DB) error {
+func (model *Model) BeforeCreate(tx *gorm.DB) error {
 	id, err := uuid.NewRandom()
-	order.ID = id
+	model.ID = id
 	return err
 }

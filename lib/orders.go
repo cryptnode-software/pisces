@@ -48,7 +48,7 @@ type OrderID string
 type Order struct {
 	PaymentMethod PaymentMethod
 	Status        OrderStatus
-	Total         float32
+	Total         float32 `gorm:"-"`
 	ExtID         string
 	Due           time.Time
 	Inquiry       *Inquiry `gorm:"references:ID"`
