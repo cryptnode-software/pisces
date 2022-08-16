@@ -6,6 +6,7 @@ import (
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/errors"
 	"github.com/gocraft/dbr/v2"
+	"gorm.io/gorm"
 )
 
 var (
@@ -30,6 +31,7 @@ func NewService(env *lib.Env) (lib.CartService, error) {
 		env,
 		&repo{
 			env.DB,
+			env.GormDB,
 		},
 	}, nil
 }
@@ -84,6 +86,7 @@ type repoi interface {
 
 type repo struct {
 	*dbr.Connection
+	*gorm.DB
 }
 
 //RemoveProduct gives us a simple way of directly writing to the cart table w/o any validation
@@ -139,29 +142,32 @@ func (repo *repo) GetCart(ctx context.Context, order *lib.Order) (cart *lib.Cart
 }
 
 func (repo *repo) SaveCart(ctx context.Context, cart *lib.Cart) (*lib.Cart, error) {
-	sess := repo.NewSession(nil)
 
-	sess.DeleteFrom(tables.cart).Where("order_id = ?", cart.OrderID).ExecContext(ctx)
+	repo.DB.Save(cart)
 
-	for _, content := range cart.Contents {
-		result, err := sess.InsertInto(tables.cart).
-			Pair("product_id", content.ProductID).
-			Pair("quantity", content.Quantity).
-			Pair("order_id", cart.OrderID).
-			ExecContext(ctx)
+	// sess := repo.NewSession(nil)
 
-		if err != nil {
-			return nil, err
-		}
+	// sess.DeleteFrom(tables.cart).Where("order_id = ?", cart.OrderID).ExecContext(ctx)
 
-		id, err := result.LastInsertId()
+	// for _, content := range cart.Contents {
+	// 	result, err := sess.InsertInto(tables.cart).
+	// 		Pair("product_id", content.ProductID).
+	// 		Pair("quantity", content.Quantity).
+	// 		Pair("order_id", cart.OrderID).
+	// 		ExecContext(ctx)
 
-		if err != nil {
-			return nil, err
-		}
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
 
-		content.ID = id
-	}
+	// 	id, err := result.LastInsertId()
+
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+
+	// 	content.ID = id
+	// }
 
 	return cart, nil
 }

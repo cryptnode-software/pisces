@@ -2,6 +2,8 @@ package lib
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 //CartService represents the structure that the cart service should be
@@ -30,8 +32,10 @@ const (
 //currently the OrderID is required, but in the future you
 //should be able to make an Cart w/o pairing it to an order.
 type Cart struct {
-	Contents []*CartContents
-	OrderID  OrderID
+	Order    *Order `gorm:"references:ID;"`
+	Contents []*CartContent
+	OrderID  uuid.UUID
+	Model
 }
 
 //CartContents is the internal structure of a cart. This
@@ -40,8 +44,9 @@ type Cart struct {
 //the database. When updating a cart we currently erase
 //the previous one and create a new one. In the future
 //it will update the previous cart instead of erasing it.
-type CartContents struct {
-	ProductID int64
+type CartContent struct {
+	ProductID uuid.UUID
+	Product   *Product `gorm:"references:ID;"`
 	Quantity  int64
-	ID        int64
+	Model
 }

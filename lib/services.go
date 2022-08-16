@@ -35,7 +35,7 @@ func (services *Services) GetTotal(ctx context.Context, order *Order) (total flo
 	}
 
 	for _, content := range cart.Contents {
-		product, err := services.ProductService.GetProduct(ctx, content.ProductID)
+		product, err := services.ProductService.GetProduct(ctx, content.ProductID, nil)
 		if err != nil {
 			return 0, err
 		}

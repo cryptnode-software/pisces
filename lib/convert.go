@@ -104,15 +104,26 @@ func convertOrder(order *proto.Order) (result *Order, err error) {
 func convertCart(cart *proto.Cart) (result *Cart) {
 	result = new(Cart)
 
-	result.Contents = make([]*CartContents, len(cart.Contents))
-	result.OrderID = OrderID(cart.OrderId)
+	result.Contents = make([]*CartContent, len(cart.Contents))
 
-	for i, product := range cart.Contents {
-		result.Contents[i] = &CartContents{
-			ProductID: product.ProductId,
-			Quantity:  product.Quantity,
-			ID:        product.Id,
+	if uuid, err := uuid.Parse(cart.OrderId); err == nil {
+		result.OrderID = uuid
+	}
+
+	for i, pcontent := range cart.Contents {
+		content := new(CartContent)
+
+		if uuid, err := uuid.Parse(pcontent.Id); err == nil {
+			content.ID = uuid
 		}
+
+		if uuid, err := uuid.Parse(pcontent.ProductId); err == nil {
+			content.ProductID = uuid
+		}
+
+		content.Quantity = pcontent.Quantity
+
+		result.Contents[i] = content
 	}
 
 	return
@@ -122,15 +133,16 @@ func convertCartToProto(cart *Cart) (result *proto.Cart) {
 	result = new(proto.Cart)
 
 	result.Contents = make([]*proto.CartContents, len(cart.Contents))
-	result.OrderId = string(cart.OrderID)
+	result.OrderId = cart.OrderID.String()
 
-	for i, product := range cart.Contents {
+	for i, content := range cart.Contents {
+		pcontent := new(proto.CartContents)
 
-		result.Contents[i] = &proto.CartContents{
-			ProductId: product.ProductID,
-			Quantity:  product.Quantity,
-			Id:        product.ID,
-		}
+		pcontent.ProductId = content.ProductID.String()
+		pcontent.Quantity = content.Quantity
+		pcontent.Id = content.ID.String()
+
+		result.Contents[i] = pcontent
 
 	}
 

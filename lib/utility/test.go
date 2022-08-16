@@ -107,6 +107,7 @@ func NewEnv(logger clib.Logger) *clib.Env {
 
 		db.AutoMigrate(
 			new(lib.Inquiry),
+			new(lib.Product),
 			new(lib.Order),
 		)
 

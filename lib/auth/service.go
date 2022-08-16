@@ -9,6 +9,7 @@ import (
 	"github.com/cryptnode-software/pisces/lib/errors"
 	"github.com/gocraft/dbr/v2"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"gopkg.in/hlandau/passlib.v1"
 )
 
@@ -30,7 +31,7 @@ type Service struct {
 }
 
 //NewService creates a new paypal service that satisfies the PaypalService interface
-func NewService(env *lib.Env) (*Service, error) {
+func NewService(env *lib.Env) (lib.AuthService, error) {
 	return &Service{
 		env,
 		&repo{
@@ -92,12 +93,14 @@ func (s *Service) DecodeJWT(ctx context.Context, token string) (*lib.User, error
 	if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
 		switch u := claims["user"].(type) {
 		case map[string]interface{}:
-			result = &lib.User{}
+
+			result = new(lib.User)
 
 			result.Username = u["username"].(string)
-			result.ID = int32(u["id"].(float64))
+			result.ID = u["id"].(uuid.UUID)
 			result.Email = u["email"].(string)
 			result.Admin = u["admin"].(bool)
+
 		}
 
 	} else {

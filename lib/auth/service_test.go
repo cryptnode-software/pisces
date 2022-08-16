@@ -7,8 +7,8 @@ import (
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/auth"
 	"github.com/cryptnode-software/pisces/lib/utility"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/hlandau/passlib.v1"
 )
 
 var (
@@ -19,7 +19,9 @@ var (
 		Email:    "testuser@test.com",
 		Username: "testuser",
 		Admin:    false,
-		ID:       0,
+		Model: lib.Model{
+			ID: uuid.New(),
+		},
 	}
 
 	newuser = struct {
@@ -60,7 +62,6 @@ func TestGenerateAndDecodeJWT(t *testing.T) {
 }
 
 func TestLoginUser(t *testing.T) {
-	service.SetRepo(&mockrepo{})
 
 	req := &lib.LoginRequest{
 		Password: unhashedpassword,
@@ -82,7 +83,6 @@ func TestLoginUser(t *testing.T) {
 }
 
 func TestFailedLogin(t *testing.T) {
-	service.SetRepo(&mockrepo{})
 
 	req := &lib.LoginRequest{
 		Password: "fakepassword",
@@ -100,7 +100,6 @@ func TestFailedLogin(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	service.SetRepo(&mockrepo{})
 	ctx := context.Background()
 
 	user, err := service.CreateUser(ctx, user, unhashedpassword)
@@ -114,48 +113,4 @@ func TestCreateUser(t *testing.T) {
 		t.Error("failed to create user")
 		return
 	}
-}
-
-type mockrepo struct{}
-
-func (r *mockrepo) CreateUser(ctx context.Context, user *lib.User, password string) (*lib.User, error) {
-	newuser = struct {
-		password string
-		*lib.User
-	}{
-		password,
-		user,
-	}
-
-	newuser.ID = 0
-
-	return newuser.User, nil
-}
-
-func (r *mockrepo) Login(ctx context.Context, req *lib.LoginRequest) (*lib.User, error) {
-
-	user, err := r.FindUser(ctx, req.Username, "")
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = passlib.Verify(req.Password, password)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
-}
-
-func (r *mockrepo) FindUser(ctx context.Context, username, email string) (*lib.User, error) {
-
-	if username == user.Username {
-		return user, nil
-	}
-
-	if email == user.Email {
-		return user, nil
-	}
-
-	return nil, nil
 }

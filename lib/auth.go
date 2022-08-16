@@ -31,15 +31,14 @@ type LoginRequest struct {
 
 //User the general structure of a user through out the ecosystem
 type User struct {
-	Username string `json:"username" db:"username"`
-	Email    string `json:"email" db:"email"`
-	Admin    bool   `json:"admin" db:"admin"`
-	ID       int32  `json:"id" db:"id"`
+	Username string
+	Email    string
+	Admin    bool
+	Model
 }
 
 //Auth ...
-type Auth struct {
-}
+type Auth struct{}
 
 //CreateUserResponse ...
 type CreateUserResponse struct {
