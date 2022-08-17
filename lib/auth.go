@@ -31,9 +31,9 @@ type LoginRequest struct {
 
 //User the general structure of a user through out the ecosystem
 type User struct {
-	Username string
-	Email    string
-	Admin    bool
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Admin    bool   `json:"admin"`
 	Model
 }
 

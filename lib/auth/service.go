@@ -96,8 +96,14 @@ func (s *Service) DecodeJWT(ctx context.Context, token string) (*lib.User, error
 
 			result = new(lib.User)
 
+			uuid, err := uuid.Parse(u["id"].(string))
+			if err != nil {
+				return nil, err
+			}
+
+			result.ID = uuid
+
 			result.Username = u["username"].(string)
-			result.ID = u["id"].(uuid.UUID)
 			result.Email = u["email"].(string)
 			result.Admin = u["admin"].(bool)
 
