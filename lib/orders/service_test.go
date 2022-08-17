@@ -72,6 +72,46 @@ func TestSaveInquiry(t *testing.T) {
 	}
 }
 
+func TestGetInquiry(t *testing.T) {
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	tables := []struct {
+		inquiry *lib.Inquiry
+	}{
+		{
+			inquiry: &lib.Inquiry{
+				Description: "Magna ipsum culpa labore pariatur elit commodo consequat esse est.",
+				Email:       "test.user@test.io",
+				Number:      "000-000-0000",
+				FirstName:   "test",
+				LastName:    "user",
+			},
+		},
+	}
+
+	for _, table := range tables {
+		seed([]*lib.Inquiry{
+			table.inquiry,
+		})
+
+		inquiry, err := service.GetInquiry(ctx, table.inquiry.ID)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		table.inquiry.CreatedAt = inquiry.CreatedAt
+		table.inquiry.UpdatedAt = inquiry.UpdatedAt
+
+		assert.Equal(t, table.inquiry, inquiry)
+
+		deseed([]*lib.Inquiry{table.inquiry})
+	}
+}
+
 func TestSaveOrder(t *testing.T) {
 	if err != nil {
 		t.Error(err)
@@ -233,12 +273,31 @@ func TestGetOrders(t *testing.T) {
 			},
 			status: lib.OrderStatusNotImplemented,
 		},
+		{
+			expected: []*lib.Order{
+				{
+					PaymentMethod: lib.PaymentMethodNotImplemented,
+					Status:        lib.OrderStatusAccepted,
+					Due:           time.Now().Add(60 * 24),
+					Inquiry: &lib.Inquiry{
+						Description: "Magna ipsum culpa labore pariatur elit commodo consequat esse est.",
+						Email:       "test.user@test.io",
+						Number:      "000-000-0000",
+						FirstName:   "test",
+						LastName:    "user",
+					},
+				},
+			},
+			status: lib.OrderStatusAccepted,
+		},
 	}
 
 	for _, table := range tables {
 		seed(table.expected)
 
-		orders, err := service.GetOrders(ctx, nil)
+		orders, err := service.GetOrders(ctx, &lib.OrderConditions{
+			Status: table.status,
+		})
 		if err != nil {
 			t.Error(err)
 			return
@@ -254,15 +313,22 @@ func TestGetOrders(t *testing.T) {
 
 }
 
-func seed(orders []*lib.Order) error {
-	for i, o := range orders {
-		o, err := service.SaveOrder(ctx, o)
+func seed[T *lib.Order | *lib.Inquiry](models []T) error {
+	for _, model := range models {
+		switch model := any(model).(type) {
+		case *lib.Inquiry:
+			_, err := service.SaveInquiry(ctx, model)
 
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
+		case *lib.Order:
+			_, err := service.SaveOrder(ctx, model)
+
+			if err != nil {
+				return err
+			}
 		}
-
-		orders[i] = o
 	}
 	return nil
 }

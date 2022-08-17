@@ -14,6 +14,7 @@ const (
 //AuthService represents our internal auth service mostly used for authenticating customers and
 //our admin employees
 type AuthService interface {
+	DeleteUser(ctx context.Context, user *User, conditions *DeleteConditions) error
 	CreateUser(ctx context.Context, user *User, password string) (*User, error)
 	DecodeJWT(ctx context.Context, token string) (*User, error)
 	GenerateJWT(ctx context.Context, user *User) (string, error)
@@ -29,11 +30,11 @@ type LoginRequest struct {
 	Password string
 }
 
-//User the general structure of a user through out the ecosystem
+//User the general public structure of a user through out the ecosystem
 type User struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Admin    bool   `json:"admin"`
+	Admin    bool   `json:"admin" gorm:"not null; default:false;"`
+	Username string `json:"username" gorm:"not null;"`
+	Email    string `json:"email" gorm:"not null;"`
 	Model
 }
 

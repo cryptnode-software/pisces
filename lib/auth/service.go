@@ -7,10 +7,10 @@ import (
 
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/errors"
-	"github.com/gocraft/dbr/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"gopkg.in/hlandau/passlib.v1"
+	"gorm.io/gorm"
 )
 
 var (
@@ -35,7 +35,7 @@ func NewService(env *lib.Env) (lib.AuthService, error) {
 	return &Service{
 		env,
 		&repo{
-			env.DB,
+			env.GormDB,
 		},
 	}, nil
 }
@@ -116,6 +116,15 @@ func (s *Service) DecodeJWT(ctx context.Context, token string) (*lib.User, error
 	return result, nil
 }
 
+func (s *Service) DeleteUser(ctx context.Context, user *lib.User, conditions *lib.DeleteConditions) error {
+	if conditions != nil {
+		if conditions.HardDelete {
+			return s.repo.HardDelete(ctx, user)
+		}
+	}
+	return s.repo.SoftDelete(ctx, user)
+}
+
 //AuthenticateToken makes sure a token is valid and isn't expired otherwise it
 //will raise an exception.
 func (s *Service) AuthenticateToken(ctx context.Context) (*lib.User, error) {
@@ -154,10 +163,12 @@ type RepoI interface {
 	CreateUser(ctx context.Context, user *lib.User, password string) (*lib.User, error)
 	FindUser(ctx context.Context, username, email string) (*lib.User, error)
 	Login(context.Context, *lib.LoginRequest) (*lib.User, error)
+	HardDelete(ctx context.Context, user *lib.User) error
+	SoftDelete(ctx context.Context, user *lib.User) error
 }
 
 type repo struct {
-	*dbr.Connection
+	*gorm.DB
 }
 
 func (r *repo) CreateUser(ctx context.Context, user *lib.User, password string) (*lib.User, error) {
@@ -174,27 +185,12 @@ func (r *repo) CreateUser(ctx context.Context, user *lib.User, password string) 
 		return nil, errors.ErrInvalidPassword
 	}
 
-	sess := r.NewSession(nil)
-
 	hash, err := passlib.Hash(password)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = sess.InsertInto(tables.users).
-		Pair("username", user.Username).
-		Pair("email", user.Email).
-		Pair("password", hash).
-		ExecContext(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = sess.Select("id").From(tables.users).Where("username = ?", user.Username).LoadOne(&user.ID)
-	if err != nil {
-		return nil, err
-	}
+	r.DB.Create(user).Set("password", hash)
 
 	return user, nil
 
@@ -206,10 +202,8 @@ func (r *repo) Login(ctx context.Context, req *lib.LoginRequest) (*lib.User, err
 		return nil, err
 	}
 
-	sess := r.NewSession(nil)
 	hash := ""
-
-	err = sess.Select("password").From(tables.users).Where("id = ?", user.ID).LoadOne(&hash)
+	err = r.DB.Model(new(lib.User)).Select("password").Where("id = ?", user.ID).First(&hash).Error
 	if err != nil {
 		return nil, err
 	}
@@ -232,19 +226,19 @@ func (r *repo) FindUser(ctx context.Context, username, email string) (*lib.User,
 		return nil, errors.ErrNoUsernameOrEmailProvided
 	}
 
-	sess := r.NewSession(nil)
-	user := &lib.User{}
-	stmt := sess.Select("*").From(tables.users)
+	tx := r.DB.Model(new(lib.User))
 
 	if username != "" {
-		stmt = stmt.Where("username = ?", username)
+		tx = tx.Where("username = ?", username)
 	}
 
 	if email != "" {
-		stmt = stmt.Where("email = ?", email)
+		tx = tx.Where("email = ?", email)
 	}
 
-	err := stmt.LoadOneContext(ctx, user)
+	user := new(lib.User)
+
+	err := tx.First(user, "username = ? or email = ?", username, email).Error
 
 	if err != nil {
 		return nil, err
@@ -263,4 +257,11 @@ func (r *repo) FindUser(ctx context.Context, username, email string) (*lib.User,
 	}
 
 	return user, nil
+}
+
+func (r *repo) HardDelete(ctx context.Context, user *lib.User) error {
+	return r.DB.Unscoped().Delete(user).Error
+}
+func (r *repo) SoftDelete(ctx context.Context, user *lib.User) error {
+	return r.DB.Delete(user).Error
 }

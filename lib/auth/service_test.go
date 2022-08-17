@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	password         = "$s2$16384$8$1$RumzdAfkvTNNHOPWev+d0L5c$AWSyfV0gxaF+yrQHzG5kRE/gzHH/waRTjMwg1qQachs="
+	ctx              = context.Background()
 	unhashedpassword = "testpassword"
 
-	user = &lib.User{
+	testuser = &lib.User{
 		Email:    "testuser@test.com",
 		Username: "testuser",
 		Admin:    false,
@@ -36,7 +36,7 @@ var service, err = auth.NewService(env)
 func TestGenerateAndDecodeJWT(t *testing.T) {
 	ctx := context.Background()
 
-	token, err := service.GenerateJWT(ctx, user)
+	token, err := service.GenerateJWT(ctx, testuser)
 
 	if err != nil {
 		t.Error(err)
@@ -58,14 +58,14 @@ func TestGenerateAndDecodeJWT(t *testing.T) {
 		return
 	}
 
-	assert.Equal(t, user, u)
+	assert.Equal(t, testuser, u)
 }
 
 func TestLoginUser(t *testing.T) {
 
 	req := &lib.LoginRequest{
 		Password: unhashedpassword,
-		Username: user.Username,
+		Username: testuser.Username,
 	}
 
 	ctx := context.Background()
@@ -86,7 +86,7 @@ func TestFailedLogin(t *testing.T) {
 
 	req := &lib.LoginRequest{
 		Password: "fakepassword",
-		Username: user.Username,
+		Username: testuser.Username,
 	}
 
 	ctx := context.Background()
@@ -100,9 +100,8 @@ func TestFailedLogin(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	ctx := context.Background()
 
-	user, err := service.CreateUser(ctx, user, unhashedpassword)
+	user, err := service.CreateUser(ctx, testuser, unhashedpassword)
 
 	if err != nil {
 		t.Error(err)
@@ -113,4 +112,35 @@ func TestCreateUser(t *testing.T) {
 		t.Error("failed to create user")
 		return
 	}
+}
+
+func seed(users []*user) error {
+
+	for _, user := range users {
+		u, err := service.CreateUser(ctx, user.User, user.password)
+
+		if err != nil {
+			return err
+		}
+
+		user.User = u
+	}
+
+	return nil
+}
+
+func deseed(users []*user) error {
+	for _, user := range users {
+		if err := service.DeleteUser(ctx, user.User, &lib.DeleteConditions{
+			HardDelete: true,
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type user struct {
+	password string
+	*lib.User
 }

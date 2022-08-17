@@ -5,21 +5,8 @@ import (
 
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/errors"
-	"github.com/gocraft/dbr/v2"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-)
-
-var (
-	tables = struct {
-		orders      string
-		inquires    string
-		attachments string
-	}{
-		attachments: "inquiry_attachments",
-		inquires:    "inquires",
-		orders:      "orders",
-	}
 )
 
 //Service the order service, handles everything related to an order
@@ -34,7 +21,6 @@ func NewService(env *lib.Env) (lib.OrderService, error) {
 	return &Service{
 		env,
 		&repo{
-			env.DB,
 			env.GormDB,
 		},
 	}, nil
@@ -134,15 +120,12 @@ type repoi interface {
 }
 
 type repo struct {
-	*dbr.Connection
 	*gorm.DB
 }
 
 func (r *repo) GetInquiry(ctx context.Context, id uuid.UUID) (inquiry *lib.Inquiry, err error) {
-	sess := r.NewSession(nil)
-
-	err = sess.Select("*").From(tables.inquires).Where("id = ?", id).LoadOneContext(ctx, &inquiry)
-
+	inquiry = new(lib.Inquiry)
+	r.DB.Model(new(lib.Inquiry)).First(inquiry, "id = ?", id)
 	return
 }
 
@@ -153,21 +136,15 @@ func (r *repo) CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, e
 }
 
 func (r *repo) UpdateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
-	sess := r.NewSession(nil)
-
-	_, err := sess.Update(tables.orders).
-		// Where("id = ?", order.ID).
+	err := r.DB.Model(new(lib.Order)).
+		Where("id = ?", order.ID).
 		Set("payment_method", order.PaymentMethod).
 		Set("status", order.Status).
 		Set("ext_id", order.ExtID).
 		Set("due", order.Due).
-		Exec()
+		Error
 
-	if err != nil {
-		return nil, err
-	}
-
-	return order, nil
+	return order, err
 }
 
 func (r *repo) GetOrders(ctx context.Context, conditions *lib.OrderConditions) ([]*lib.Order, error) {
@@ -199,23 +176,21 @@ func (r *repo) GetOrder(ctx context.Context, id uuid.UUID) (order *lib.Order, er
 }
 
 func (r *repo) GetInquires(ctx context.Context, conditions *lib.GetInquiryConditions) ([]*lib.Inquiry, error) {
-	sess := r.NewSession(nil)
 
 	var result []*lib.Inquiry
 
-	stmt := sess.Select("*").From(tables.inquires)
+	tx := r.DB.Model(new(lib.Inquiry))
 
 	if conditions != nil {
 		if conditions.WithoutOrder {
-			stmt = stmt.Where("order_id IS NULL")
+			tx = tx.Where("order_id IS NULL")
 		}
 
 		if conditions.InquiryID != 0 {
-			stmt = stmt.Where("id = ?", conditions.InquiryID)
+			tx = tx.Where("id = ?", conditions.InquiryID)
 		}
 	}
-
-	stmt.LoadContext(ctx, &result)
+	tx.Find(&result)
 
 	return result, nil
 }

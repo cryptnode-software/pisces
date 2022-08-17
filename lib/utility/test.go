@@ -7,7 +7,6 @@ import (
 	"github.com/cryptnode-software/pisces/lib"
 	clib "github.com/cryptnode-software/pisces/lib"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gocraft/dbr/v2"
 	paylib "github.com/plutov/paypal"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -109,13 +108,9 @@ func NewEnv(logger clib.Logger) *clib.Env {
 			new(lib.Inquiry),
 			new(lib.Product),
 			new(lib.Order),
+			new(user),
 		)
 
-		sql, err := dbr.Open("mysql", os.Getenv(envDatabaseURL), nil)
-		if err != nil {
-			log.Fatal(err)
-		}
-		result.DB = sql
 	}
 
 	//aws config
@@ -143,4 +138,9 @@ func NewEnv(logger clib.Logger) *clib.Env {
 	}
 
 	return result
+}
+
+type user struct {
+	Password string
+	clib.User
 }
