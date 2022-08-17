@@ -111,7 +111,7 @@ func TestSoftDeleteProduct(t *testing.T) {
 
 	for _, p := range products {
 
-		err := service.DeleteProduct(ctx, p, &lib.ProductDeleteConditions{
+		err := service.DeleteProduct(ctx, p, &lib.DeleteConditions{
 			HardDelete: false,
 		})
 
@@ -149,7 +149,7 @@ func seed(products []*lib.Product) error {
 
 func deseed(products []*lib.Product) error {
 	for _, p := range products {
-		err := service.DeleteProduct(ctx, p, &lib.ProductDeleteConditions{
+		err := service.DeleteProduct(ctx, p, &lib.DeleteConditions{
 			HardDelete: true,
 		})
 		if err != nil {

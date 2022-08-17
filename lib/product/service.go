@@ -56,7 +56,7 @@ func (s *Service) SaveProduct(ctx context.Context, product *lib.Product) (result
 	return s.repo.SaveProduct(ctx, product)
 }
 
-func (s *Service) DeleteProduct(ctx context.Context, product *lib.Product, conditions *lib.ProductDeleteConditions) error {
+func (s *Service) DeleteProduct(ctx context.Context, product *lib.Product, conditions *lib.DeleteConditions) error {
 
 	if conditions != nil && conditions.HardDelete {
 		return s.repo.HardDelete(ctx, product)

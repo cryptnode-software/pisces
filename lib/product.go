@@ -8,7 +8,7 @@ import (
 
 //ProductService ...
 type ProductService interface {
-	DeleteProduct(ctx context.Context, product *Product, conditions *ProductDeleteConditions) error
+	DeleteProduct(ctx context.Context, product *Product, conditions *DeleteConditions) error
 	GetProduct(ctx context.Context, id uuid.UUID, conditions *GetProductCondtions) (*Product, error)
 	SaveProduct(ctx context.Context, product *Product) (*Product, error)
 }
@@ -21,7 +21,7 @@ type Product struct {
 	Model
 }
 
-type ProductDeleteConditions struct {
+type DeleteConditions struct {
 	HardDelete bool
 }
 
