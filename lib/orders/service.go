@@ -62,7 +62,7 @@ func (s *Service) GetInquiry(ctx context.Context, id uuid.UUID) (*lib.Inquiry, e
 func (s *Service) SaveOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
 
 	//inquiry should be required to create/update a order
-	if order.Inquiry == nil || order.InquiryID == uuid.Nil {
+	if order.Inquiry == nil {
 		return nil, &errors.ErrNoOrderInquiryProvided{
 			OrderID: order.ID.String(),
 		}
@@ -102,15 +102,35 @@ func (s *Service) ArchiveOrder(ctx context.Context, order *lib.Order) (*lib.Orde
 	return order, nil
 }
 
+func (s *Service) DeleteOrder(ctx context.Context, order *lib.Order, conditions *lib.DeleteConditions) error {
+	if conditions != nil && conditions.HardDelete {
+		return s.repo.HardDeleteOrder(ctx, order)
+	}
+
+	return s.repo.SoftDeleteOrder(ctx, order)
+}
+
+func (s *Service) DeleteInquiry(ctx context.Context, inquiry *lib.Inquiry, conditions *lib.DeleteConditions) error {
+	if conditions != nil && conditions.HardDelete {
+		return s.repo.HardDeleteInquiry(ctx, inquiry)
+	}
+
+	return s.repo.SoftDeleteInquiry(ctx, inquiry)
+}
+
 type repoi interface {
 	GetInquires(ctx context.Context, conditions *lib.GetInquiryConditions) ([]*lib.Inquiry, error)
 	UpdateInquiry(ctx context.Context, inquiry *lib.Inquiry) (*lib.Inquiry, error)
 	CreateInquiry(ctx context.Context, inquiry *lib.Inquiry) (*lib.Inquiry, error)
+	GetOrders(context.Context, *lib.OrderConditions) ([]*lib.Order, error)
 	CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error)
 	UpdateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error)
 	GetInquiry(ctx context.Context, id uuid.UUID) (*lib.Inquiry, error)
 	GetOrder(ctx context.Context, id uuid.UUID) (*lib.Order, error)
-	GetOrders(context.Context, *lib.OrderConditions) ([]*lib.Order, error)
+	HardDeleteOrder(ctx context.Context, order *lib.Order) error
+	SoftDeleteOrder(ctx context.Context, order *lib.Order) error
+	HardDeleteInquiry(ctx context.Context, inquiry *lib.Inquiry) error
+	SoftDeleteInquiry(ctx context.Context, inquiry *lib.Inquiry) error
 }
 
 type repo struct {
@@ -127,47 +147,7 @@ func (r *repo) GetInquiry(ctx context.Context, id uuid.UUID) (inquiry *lib.Inqui
 }
 
 func (r *repo) CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
-	// sess := r.NewSession(nil)
-
 	err := r.DB.Save(order).Error
-
-	// tx.
-
-	// result, err := sess.InsertInto(tables.orders).
-	// 	Pair("payment_method", order.Paymen_, err := sess.Update(tables.inquires).
-	// 	Set("description", inquiry.Description).
-	// 	Set("first_name", inquiry.FirstName).
-	// 	Set("last_name", inquiry.LastName).
-	// 	Set("number", inquiry.Number).
-	// 	Set("email", inquiry.Email).
-	// 	Where("id = ?", inquiry.ID).
-	// 	ExecContext(ctx)
-
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// 	Pair("due", order.Due).
-	// 	ExecContext(ctx)
-
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// id, err := result.LastInsertId()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// order.ID = id
-
-	// _, err = sess.Update(tables.inquires).
-	// 	Where("id = ?", order.InquiryID).
-	// 	Set("order_id", order.ID).
-	// 	ExecContext(ctx)
-
-	// if err != nil {
-	// 	return nil, err
-	// }
 
 	return order, err
 }
@@ -191,40 +171,29 @@ func (r *repo) UpdateOrder(ctx context.Context, order *lib.Order) (*lib.Order, e
 }
 
 func (r *repo) GetOrders(ctx context.Context, conditions *lib.OrderConditions) ([]*lib.Order, error) {
-	sess := r.NewSession(nil)
 
 	var result []*lib.Order
 
-	stmt := sess.Select("*").
-		From(tables.orders)
+	tx := r.DB
 
 	if conditions != nil {
 		if conditions.Status != lib.OrderStatusNotImplemented {
-			stmt.Where("status = ?", conditions.Status)
+			tx.Where("status = ?", conditions.Status)
 		}
 	}
 
-	_, err := stmt.LoadContext(ctx, &result)
+	tx.Find(&result)
 
-	if err != nil {
-		return nil, err
+	if tx.Error != nil {
+		return nil, tx.Error
 	}
-
-	// for i, order := range result {
-	// result[i].Due = strings.Replace(order.Due, "T", " ", 1)
-	// result[i].Due = strings.Replace(order.Due, "Z", " ", 1)
-	// }
 
 	return result, nil
 }
 
 func (r *repo) GetOrder(ctx context.Context, id uuid.UUID) (order *lib.Order, err error) {
-	sess := r.NewSession(nil)
-
-	err = sess.Select("*").From(tables.orders).Where("id = ?", id).LoadOne(&order)
-
-	// order.Due = strings.Replace(order.Due, "T", " ", 1)
-	// order.Due = strings.Replace(order.Due, "Z", " ", 1)
+	order = new(lib.Order)
+	r.DB.Preload("Inquiry").Model(new(lib.Order)).First(order, "id = ?", id)
 
 	return
 }
@@ -259,22 +228,24 @@ func (r *repo) CreateInquiry(ctx context.Context, inquiry *lib.Inquiry) (*lib.In
 }
 
 func (r *repo) UpdateInquiry(ctx context.Context, inquiry *lib.Inquiry) (*lib.Inquiry, error) {
-	// sess := r.NewSession(nil)
 
 	err := r.DB.Save(inquiry).Error
 
-	// _, err := sess.Update(tables.inquires).
-	// 	Set("description", inquiry.Description).
-	// 	Set("first_name", inquiry.FirstName).
-	// 	Set("last_name", inquiry.LastName).
-	// 	Set("number", inquiry.Number).
-	// 	Set("email", inquiry.Email).
-	// 	Where("id = ?", inquiry.ID).
-	// 	ExecContext(ctx)
-
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	return inquiry, err
+}
+
+func (r *repo) HardDeleteOrder(ctx context.Context, order *lib.Order) error {
+	return r.DB.Unscoped().Delete(order).Error
+}
+
+func (r *repo) SoftDeleteOrder(ctx context.Context, order *lib.Order) error {
+	return r.DB.Delete(order).Error
+}
+
+func (r *repo) HardDeleteInquiry(ctx context.Context, inquiry *lib.Inquiry) error {
+	return r.DB.Unscoped().Delete(inquiry).Error
+}
+
+func (r *repo) SoftDeleteInquiry(ctx context.Context, inquiry *lib.Inquiry) error {
+	return r.DB.Delete(inquiry).Error
 }

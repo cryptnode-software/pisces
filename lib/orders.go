@@ -5,11 +5,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 //OrderService represents the OrderService interface
 type OrderService interface {
 	GetInquires(ctx context.Context, conditions *GetInquiryConditions) ([]*Inquiry, error)
+	DeleteOrder(context.Context, *Order, *DeleteConditions) error
+	DeleteInquiry(context.Context, *Inquiry, *DeleteConditions) error
 	GetOrders(context.Context, *OrderConditions) ([]*Order, error)
 	GetInquiry(ctx context.Context, id uuid.UUID) (*Inquiry, error)
 	SaveInquiry(context.Context, *Inquiry) (*Inquiry, error)
@@ -54,6 +57,11 @@ type Order struct {
 	Inquiry       *Inquiry `gorm:"references:ID"`
 	InquiryID     uuid.UUID
 	Model
+}
+
+func (order *Order) AfterDelete(tx *gorm.DB) (err error) {
+	tx.Delete(new(Inquiry), "id = ?", order.InquiryID)
+	return
 }
 
 //PaymentMethod the primitive data type for all of
