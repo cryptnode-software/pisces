@@ -40,11 +40,6 @@ func NewService(env *lib.Env) (lib.AuthService, error) {
 	}, nil
 }
 
-func (service *Service) SetRepo(repo RepoI) error {
-	service.repo = repo
-	return nil
-}
-
 //Login accepts a login response with a valid username and password if they match then the jwt
 //is hashed and returned in order to properly user the application
 func (s *Service) Login(ctx context.Context, req *lib.LoginRequest) (*lib.User, error) {
@@ -171,12 +166,12 @@ type repo struct {
 	*gorm.DB
 }
 
-func (r *repo) CreateUser(ctx context.Context, user *lib.User, password string) (*lib.User, error) {
-	if user.Username == "" {
+func (r *repo) CreateUser(ctx context.Context, luser *lib.User, password string) (*lib.User, error) {
+	if luser.Username == "" {
 		return nil, errors.ErrNoUsernameOrEmailProvided
 	}
 
-	if user.Email == "" {
+	if luser.Email == "" {
 		return nil, errors.ErrNoUsernameOrEmailProvided
 
 	}
@@ -190,9 +185,14 @@ func (r *repo) CreateUser(ctx context.Context, user *lib.User, password string) 
 		return nil, err
 	}
 
-	r.DB.Create(user).Set("password", hash)
+	entry := new(user)
 
-	return user, nil
+	entry.Password = hash
+	entry.User = luser
+
+	r.DB.Model(new(user)).Create(entry)
+
+	return entry.User, nil
 
 }
 
@@ -238,7 +238,7 @@ func (r *repo) FindUser(ctx context.Context, username, email string) (*lib.User,
 
 	user := new(lib.User)
 
-	err := tx.First(user, "username = ? or email = ?", username, email).Error
+	err := tx.First(user).Error
 
 	if err != nil {
 		return nil, err

@@ -7,7 +7,6 @@ import (
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/auth"
 	"github.com/cryptnode-software/pisces/lib/utility"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,15 +18,12 @@ var (
 		Email:    "testuser@test.com",
 		Username: "testuser",
 		Admin:    false,
-		Model: lib.Model{
-			ID: uuid.New(),
-		},
 	}
 
-	newuser = struct {
-		password string
-		*lib.User
-	}{}
+	newuser = &user{
+		password: unhashedpassword,
+		User:     testuser,
+	}
 )
 
 var env = utility.NewEnv(utility.NewLogger())
@@ -61,56 +57,151 @@ func TestGenerateAndDecodeJWT(t *testing.T) {
 	assert.Equal(t, testuser, u)
 }
 
+//TestLoginUser tests against the testuser defined above
 func TestLoginUser(t *testing.T) {
 
-	req := &lib.LoginRequest{
-		Password: unhashedpassword,
-		Username: testuser.Username,
+	tables := []struct {
+		user *user
+		fail bool
+	}{
+		{
+			user: &user{
+				password: "incorrect_password",
+				User: &lib.User{
+					Username: newuser.Username,
+				},
+			},
+			fail: true,
+		},
+		{
+			user: &user{
+				password: newuser.password,
+				User: &lib.User{
+					Username: "incorrect.email@incorrect.com",
+				},
+			},
+			fail: true,
+		},
+		{
+			user: &user{
+				password: newuser.password,
+				User: &lib.User{
+					Username: newuser.Username,
+				},
+			},
+			fail: false,
+		},
 	}
 
-	ctx := context.Background()
+	seed([]*user{
+		newuser,
+	})
 
-	user, err := service.Login(ctx, req)
-	if err != nil {
-		t.Error(err)
-		return
+	for _, table := range tables {
+
+		req := &lib.LoginRequest{
+			Username: table.user.Username,
+			Password: table.user.password,
+		}
+
+		ctx := context.Background()
+
+		{
+			user, err := service.Login(ctx, req)
+
+			if !table.fail && err != nil {
+				t.Error(err)
+				return
+			}
+
+			if (table.fail && err == nil) || (table.fail && user != nil) {
+				t.Error("login user was suppose to fail when it didn't")
+			}
+
+			if !table.fail && user == nil {
+				t.Error("no user returned")
+				return
+			}
+
+		}
+
 	}
 
-	if user == nil {
-		t.Error("no user returned")
-		return
-	}
-}
-
-func TestFailedLogin(t *testing.T) {
-
-	req := &lib.LoginRequest{
-		Password: "fakepassword",
-		Username: testuser.Username,
-	}
-
-	ctx := context.Background()
-
-	_, err := service.Login(ctx, req)
-	if err == nil {
-		t.Errorf("login failed to fail")
-		return
-	}
-
+	deseed([]*user{
+		newuser,
+	})
 }
 
 func TestCreateUser(t *testing.T) {
 
-	user, err := service.CreateUser(ctx, testuser, unhashedpassword)
-
-	if err != nil {
-		t.Error(err)
-		return
+	tables := []struct {
+		user *user
+		fail bool
+	}{
+		{
+			user: &user{
+				password: "",
+				User: &lib.User{
+					Username: testuser.Username,
+					Email:    testuser.Email,
+				},
+			},
+			fail: true,
+		},
+		{
+			user: &user{
+				password: unhashedpassword,
+				User: &lib.User{
+					Username: "",
+					Email:    testuser.Email,
+				},
+			},
+			fail: true,
+		},
+		{
+			user: &user{
+				password: unhashedpassword,
+				User: &lib.User{
+					Username: testuser.Username,
+					Email:    "",
+				},
+			},
+			fail: true,
+		},
+		{
+			user: &user{
+				password: unhashedpassword,
+				User: &lib.User{
+					Username: testuser.Username,
+					Email:    testuser.Email,
+				},
+			},
+			fail: false,
+		},
 	}
+	for _, table := range tables {
+		u, err := service.CreateUser(ctx, table.user.User, table.user.password)
 
-	if user == nil {
-		t.Error("failed to create user")
-		return
+		if (table.fail && err == nil) || (table.fail && u != nil) {
+			t.Error("create user was suppose to fail but didn't")
+			return
+		}
+
+		if !table.fail && err != nil {
+			t.Error(err)
+			return
+		}
+
+		if !table.fail && u == nil {
+			t.Error("failed to create user")
+			return
+		}
+
+		deseed([]*user{
+			{
+				User: u,
+			},
+		})
 	}
 }
 

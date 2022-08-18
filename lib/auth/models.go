@@ -3,6 +3,6 @@ package auth
 import "github.com/cryptnode-software/pisces/lib"
 
 type user struct {
-	Password string
-	lib.User
+	Password string `gorm:"not null;"`
+	*lib.User
 }

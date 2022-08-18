@@ -141,6 +141,6 @@ func NewEnv(logger clib.Logger) *clib.Env {
 }
 
 type user struct {
-	Password string
+	Password string `gorm:"not null;"`
 	clib.User
 }
