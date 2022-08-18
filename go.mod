@@ -8,7 +8,6 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.16.11
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.27.5
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/gocraft/dbr/v2 v2.7.3
 	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.1.2

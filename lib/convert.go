@@ -101,49 +101,52 @@ func convertOrder(order *proto.Order) (result *Order, err error) {
 
 }
 
-func convertCart(cart *proto.Cart) (result *Cart) {
-	result = new(Cart)
+func convertCart(cart []*proto.CartContents) (result Cart, err error) {
+	result = make([]*CartContent, len(cart))
 
-	result.Contents = make([]*CartContent, len(cart.Contents))
-
-	if uuid, err := uuid.Parse(cart.OrderId); err == nil {
-		result.OrderID = uuid
-	}
-
-	for i, pcontent := range cart.Contents {
+	for i, pcontent := range cart {
 		content := new(CartContent)
 
-		if uuid, err := uuid.Parse(pcontent.Id); err == nil {
-			content.ID = uuid
+		order, err := uuid.Parse(pcontent.OrderId)
+		if err != nil {
+			return nil, err
 		}
 
-		if uuid, err := uuid.Parse(pcontent.ProductId); err == nil {
-			content.ProductID = uuid
+		content.OrderID = order
+
+		product, err := uuid.Parse(pcontent.ProductId)
+		if err != nil {
+			return nil, err
 		}
+
+		content.ProductID = product
+
+		id, err := uuid.Parse(pcontent.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		content.ID = id
 
 		content.Quantity = pcontent.Quantity
 
-		result.Contents[i] = content
+		result[i] = content
 	}
 
 	return
 }
 
-func convertCartToProto(cart *Cart) (result *proto.Cart) {
-	result = new(proto.Cart)
+func convertCartToProto(cart Cart) (result []*proto.CartContents) {
+	result = make([]*proto.CartContents, len(cart))
 
-	result.Contents = make([]*proto.CartContents, len(cart.Contents))
-	result.OrderId = cart.OrderID.String()
-
-	for i, content := range cart.Contents {
+	for i, content := range cart {
 		pcontent := new(proto.CartContents)
-
 		pcontent.ProductId = content.ProductID.String()
+		pcontent.OrderId = content.OrderID.String()
 		pcontent.Quantity = content.Quantity
 		pcontent.Id = content.ID.String()
 
-		result.Contents[i] = pcontent
-
+		result[i] = pcontent
 	}
 
 	return

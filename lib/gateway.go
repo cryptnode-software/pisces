@@ -90,7 +90,7 @@ func (g *Gateway) SaveOrder(ctx context.Context, req *proto.SaveOrderRequest) (r
 //SaveCart saves the provided cart and
 func (g *Gateway) SaveCart(ctx context.Context, req *proto.SaveCartRequest) (res *proto.SaveCartResponse, err error) {
 
-	if req.Cart == nil || len(req.Cart.Contents) <= 0 {
+	if req.Cart == nil || len(req.Cart) <= 0 {
 		return nil, &errors.ErrInvalidRequest{
 			Fields: map[string]string{
 				"reason": "no cart was provided, you can't save an empty or nil cart",
@@ -98,15 +98,12 @@ func (g *Gateway) SaveCart(ctx context.Context, req *proto.SaveCartRequest) (res
 		}
 	}
 
-	if req.Cart.OrderId == "" {
-		return nil, &errors.ErrInvalidRequest{
-			Fields: map[string]string{
-				"reason": "no order id was provided, in order for a cart to be properly created it needs to have an associated order id",
-			},
-		}
+	cart, err := convertCart(req.Cart)
+	if err != nil {
+		return nil, err
 	}
 
-	cart, err := g.services.CartService.SaveCart(ctx, convertCart(req.Cart))
+	cart, err = g.services.CartService.SaveCart(ctx, cart)
 
 	return &proto.SaveCartResponse{
 		Cart: convertCartToProto(cart),
@@ -143,7 +140,7 @@ func (g *Gateway) AuthorizeOrder(ctx context.Context, req *proto.AuthorizeOrderR
 
 	cart, err := g.services.CartService.GetCart(ctx, order)
 
-	if cart == nil || len(cart.Contents) <= 0 {
+	if cart == nil || len(cart) <= 0 {
 		return nil, &errors.ErrInvalidRequest{
 			Fields: map[string]string{
 				"reason": fmt.Sprintf("order w/ the order id %s doesn't have a cart associated with it, please create one", req.OrderId),

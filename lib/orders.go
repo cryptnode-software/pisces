@@ -56,6 +56,7 @@ type Order struct {
 	Due           time.Time
 	Inquiry       *Inquiry `gorm:"references:ID"`
 	InquiryID     uuid.UUID
+	Cart          []CartContent
 	Model
 }
 

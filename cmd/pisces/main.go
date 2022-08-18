@@ -9,7 +9,6 @@ import (
 
 	clib "github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/utility"
-	"github.com/gocraft/dbr/v2"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -225,15 +224,6 @@ func NewEnv(logger clib.Logger) *clib.Env {
 		}
 
 		result.GormDB = db
-
-		sql, err := dbr.Open("mysql", os.Getenv(envDatabaseURL), nil)
-
-		if err != nil {
-			log.Fatal(err)
-			return nil
-		}
-
-		result.DB = sql
 
 	}
 

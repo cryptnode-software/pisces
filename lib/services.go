@@ -5,7 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/cryptnode-software/pisces/lib/errors"
-	"github.com/gocraft/dbr/v2"
+	"gorm.io/gorm"
 )
 
 //Services ...
@@ -30,11 +30,11 @@ func (services *Services) GetTotal(ctx context.Context, order *Order) (total flo
 	}
 
 	cart, err := services.CartService.GetCart(ctx, order)
-	if err != nil && err != dbr.ErrNotFound {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return
 	}
 
-	for _, content := range cart.Contents {
+	for _, content := range cart {
 		product, err := services.ProductService.GetProduct(ctx, content.ProductID, nil)
 		if err != nil {
 			return 0, err
