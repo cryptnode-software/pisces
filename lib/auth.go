@@ -72,3 +72,12 @@ func GetAuthFromContext(ctx context.Context) (string, error) {
 
 	return auth[0], nil
 }
+
+func SetAuthContext(ctx context.Context, token string) context.Context {
+
+	return metadata.NewIncomingContext(ctx, metadata.MD{
+		"auth": []string{
+			token,
+		},
+	})
+}

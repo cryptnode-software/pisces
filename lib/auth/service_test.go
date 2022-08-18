@@ -30,7 +30,6 @@ var env = utility.NewEnv(utility.NewLogger())
 var service, err = auth.NewService(env)
 
 func TestGenerateAndDecodeJWT(t *testing.T) {
-	ctx := context.Background()
 
 	token, err := service.GenerateJWT(ctx, testuser)
 
@@ -201,6 +200,121 @@ func TestCreateUser(t *testing.T) {
 			{
 				User: u,
 			},
+		})
+	}
+}
+
+func TestAuthenticateAdmin(t *testing.T) {
+	ctx := context.Background()
+
+	tables := []struct {
+		user *user
+		fail bool
+	}{
+		{
+			user: &user{
+				User: &lib.User{
+					Username: newuser.Username,
+					Email:    newuser.Email,
+					Admin:    true,
+				},
+				password: newuser.password,
+			},
+			fail: false,
+		},
+		{
+			user: &user{
+				User: &lib.User{
+					Username: newuser.Username,
+					Email:    newuser.Email,
+					Admin:    false,
+				},
+				password: newuser.password,
+			},
+			fail: true,
+		},
+	}
+
+	for _, table := range tables {
+		err := seed([]*user{
+			table.user,
+		})
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		token, err := service.GenerateJWT(ctx, table.user.User)
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		ctx = lib.SetAuthContext(ctx, token)
+
+		_, err = service.AuthenticateAdmin(ctx)
+
+		if table.fail && err == nil {
+			t.Error("authenticate user failed to fail")
+			return
+		}
+
+		if !table.fail && err != nil {
+			t.Error(err)
+			return
+		}
+
+		err = deseed([]*user{
+			table.user,
+		})
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+	}
+
+	token, err := service.GenerateJWT(ctx, testuser)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if token == "" {
+		t.Error("token was returned empty")
+	}
+}
+
+func TestSoftDeleteUser(t *testing.T) {
+	tables := []struct {
+		user *user
+		fail bool
+	}{
+		{
+			user: newuser,
+			fail: false,
+		},
+	}
+
+	for _, table := range tables {
+
+		seed([]*user{
+			table.user,
+		})
+
+		err := service.DeleteUser(ctx, table.user.User, nil)
+
+		if !table.fail && err != nil {
+			t.Error(err)
+			return
+		}
+
+		deseed([]*user{
+			table.user,
 		})
 	}
 }
