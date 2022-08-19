@@ -124,12 +124,9 @@ func convertCart(cart []*proto.CartContents) (result []*Cart, err error) {
 
 		content.ProductID = product
 
-		id, err := uuid.Parse(pcontent.Id)
-		if err != nil {
-			return nil, err
+		if id, err := uuid.Parse(pcontent.Id); err == nil {
+			content.ID = id
 		}
-
-		content.ID = id
 
 		content.Quantity = pcontent.Quantity
 
