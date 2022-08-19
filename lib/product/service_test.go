@@ -135,6 +135,39 @@ func TestSoftDeleteProduct(t *testing.T) {
 	}
 }
 
+func TestSaveProduct(t *testing.T) {
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	tables := []struct {
+		product *lib.Product
+	}{
+		{
+			product: &lib.Product{
+				Cost:        40,
+				Description: "A dozen cookies",
+				Name:        "A dozen cookies",
+			},
+		},
+	}
+
+	for _, table := range tables {
+		product, err := service.SaveProduct(ctx, table.product)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		table.product = product
+
+		assert.Equal(t, table.product, product)
+
+	}
+
+}
+
 func seed(products []*lib.Product) error {
 	for i, p := range products {
 		product, err := service.SaveProduct(ctx, p)

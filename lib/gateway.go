@@ -56,10 +56,10 @@ func (g *Gateway) SaveOrder(ctx context.Context, req *proto.SaveOrderRequest) (r
 		return nil, err
 	}
 
-	if order.Inquiry == nil {
+	if order.Inquiry == nil && order.InquiryID == uuid.Nil {
 		return nil, &errors.ErrInvalidRequest{
 			Fields: map[string]string{
-				"reason": "an inquiry is required to make a request please include the inquiry id",
+				"reason": "an inquiry is required to create an order, please include either the inquiry or inquiry id",
 			},
 		}
 	}
@@ -70,13 +70,15 @@ func (g *Gateway) SaveOrder(ctx context.Context, req *proto.SaveOrderRequest) (r
 		return nil, err
 	}
 
-	total, err := g.services.GetTotal(ctx, order)
-	if err != nil {
-		g.Env.Log.Error(err.Error())
-		return
-	}
+	if order.Cart != nil || len(order.Cart) > 0 {
+		total, err := g.services.GetTotal(ctx, order)
+		if err != nil {
+			g.Env.Log.Error(err.Error())
+			return nil, err
+		}
 
-	order.Total = total
+		order.Total = total
+	}
 
 	o, err := convertOrderToProto(order)
 	if err != nil {

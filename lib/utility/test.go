@@ -108,6 +108,7 @@ func NewEnv(logger clib.Logger) *clib.Env {
 			new(lib.Inquiry),
 			new(lib.Product),
 			new(lib.Order),
+			new(lib.Cart),
 			new(user),
 		)
 

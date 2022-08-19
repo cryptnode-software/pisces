@@ -48,7 +48,7 @@ func (s *Service) GetInquiry(ctx context.Context, id uuid.UUID) (*lib.Inquiry, e
 func (s *Service) SaveOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
 
 	//inquiry should be required to create/update a order
-	if order.Inquiry == nil {
+	if order.Inquiry == nil && order.InquiryID == uuid.Nil {
 		return nil, &errors.ErrNoOrderInquiryProvided{
 			OrderID: order.ID.String(),
 		}

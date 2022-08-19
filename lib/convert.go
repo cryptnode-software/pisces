@@ -21,6 +21,9 @@ func convertOrdersToProto(orders []*Order) (result []*proto.Order, err error) {
 }
 
 func convertInquiryToProto(info *Inquiry) *proto.Inquiry {
+	if info == nil {
+		return nil
+	}
 	return &proto.Inquiry{
 		Body:        info.Description,
 		Id:          info.ID.String(),
@@ -101,11 +104,11 @@ func convertOrder(order *proto.Order) (result *Order, err error) {
 
 }
 
-func convertCart(cart []*proto.CartContents) (result Cart, err error) {
-	result = make([]*CartContent, len(cart))
+func convertCart(cart []*proto.CartContents) (result []*Cart, err error) {
+	result = make([]*Cart, len(cart))
 
 	for i, pcontent := range cart {
-		content := new(CartContent)
+		content := new(Cart)
 
 		order, err := uuid.Parse(pcontent.OrderId)
 		if err != nil {
@@ -136,7 +139,7 @@ func convertCart(cart []*proto.CartContents) (result Cart, err error) {
 	return
 }
 
-func convertCartToProto(cart Cart) (result []*proto.CartContents) {
+func convertCartToProto(cart []*Cart) (result []*proto.CartContents) {
 	result = make([]*proto.CartContents, len(cart))
 
 	for i, content := range cart {
