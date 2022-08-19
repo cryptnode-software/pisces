@@ -6,7 +6,7 @@ import (
 )
 
 type Model struct {
-	ID         uuid.UUID `gorm:"type:varchar(36);primary_key;default:(uuid());not null" json:"id"`
+	ID         uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4();" json:"id"`
 	gorm.Model `json:"-"`
 }
 

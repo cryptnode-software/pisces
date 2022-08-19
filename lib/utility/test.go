@@ -1,14 +1,15 @@
 package utility
 
 import (
+	"database/sql"
 	"log"
 	"os"
 
-	"github.com/cryptnode-software/pisces/lib"
 	clib "github.com/cryptnode-software/pisces/lib"
-	_ "github.com/go-sql-driver/mysql"
+
 	paylib "github.com/plutov/paypal"
-	"gorm.io/driver/mysql"
+	_ "github.com/proullon/ramsql/driver"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -87,15 +88,22 @@ func NewEnv(logger clib.Logger) *clib.Env {
 	}
 
 	{
+		sql, err := sql.Open("ramsql", "Test")
+		if err != nil {
+			log.Fatal(err)
+			return nil
+		}
 
-		db, err := gorm.Open(mysql.New(mysql.Config{
-			DSN:                       os.Getenv(envDatabaseURL),
-			SkipInitializeWithVersion: false,
-			DisableDatetimePrecision:  true,
-			DontSupportRenameIndex:    true,
-			DontSupportRenameColumn:   true,
-			DefaultStringSize:         256,
-		}))
+		// db, err := gorm.Open(mysql.New(mysql.Config{
+		// 	DSN: os.Getenv(envDatabaseURL),
+		// 	DontSupportRenameIndex:
+		// }))
+
+		db, err := gorm.Open(
+			postgres.New(postgres.Config{
+				Conn: sql,
+			}),
+		)
 
 		if err != nil {
 			log.Fatal(err)
@@ -104,12 +112,16 @@ func NewEnv(logger clib.Logger) *clib.Env {
 
 		result.GormDB = db
 
-		db.AutoMigrate(
-			new(lib.Inquiry),
-			new(lib.Product),
-			new(lib.Order),
+		if db.AutoMigrate(
+			// new(lib.CartContent),
+			// new(lib.Inquiry),
+			// new(lib.Product),
+			// new(lib.Order),
 			new(user),
-		)
+		); err != nil {
+			log.Fatal(err)
+			return nil
+		}
 
 	}
 
