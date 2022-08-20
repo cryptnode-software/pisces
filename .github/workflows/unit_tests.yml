@@ -34,12 +34,18 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: 1.18
+    
+    - name: Set up mage
+      run: go install github.com/magefile/mage@latest
+    
+    - name: Run mage
+      run: mage
 
-    - name: Set up sql-migrate
-      run: go install github.com/rubenv/sql-migrate/...@latest
+    # - name: Set up sql-migrate
+    #   run: go install github.com/rubenv/sql-migrate/...@latest
 
-    - name: Run migrations
-      run: cd ./db && sql-migrate up -env schema && sql-migrate up -env app && sql-migrate up -env seed
+    # - name: Run migrations
+    #   run: cd ./db && sql-migrate up -env schema && sql-migrate up -env app && sql-migrate up -env seed
 
     
     - name : Unit Test
