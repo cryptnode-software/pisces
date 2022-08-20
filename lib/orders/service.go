@@ -155,11 +155,20 @@ func (r *repo) GetOrders(ctx context.Context, conditions *lib.OrderConditions) (
 
 	if conditions != nil {
 		if conditions.Status != lib.OrderStatusNotImplemented {
-			tx.Where("status = ?", conditions.Status)
+			if err := tx.Model(new(lib.Order)).
+				Preload("Inquiry").
+				Where("status = ?", conditions.Status).
+				Find(&result).Error; err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	tx.Find(&result)
+	if conditions == nil {
+		if err := r.DB.Preload("Inquiry").Find(&result).Error; err != nil {
+			return nil, err
+		}
+	}
 
 	if tx.Error != nil {
 		return nil, tx.Error
