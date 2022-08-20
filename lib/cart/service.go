@@ -8,14 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	tables = struct {
-		cart string
-	}{
-		cart: "carts",
-	}
-)
-
 //Service the cart service handles any interactions/validations that we
 //might need for the cart table and logic that should be handled accordingly
 type Service struct {
@@ -104,9 +96,7 @@ func (repo *repo) AddProduct(ctx context.Context, order *lib.Order, product *lib
 //GetCart accepts an entire order and returns any products and the quantity that have been
 //added to the order.
 func (repo *repo) GetCart(ctx context.Context, order *lib.Order) (cart []*lib.Cart, err error) {
-
-	repo.DB.Model(new(lib.Cart)).Find(cart, "order_id = ?", order.ID)
-
+	repo.DB.Model(new(lib.Cart)).Find(&cart, "order_id = ?", order.ID)
 	return
 }
 

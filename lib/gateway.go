@@ -100,10 +100,7 @@ func (g *Gateway) SaveCart(ctx context.Context, req *proto.SaveCartRequest) (res
 		}
 	}
 
-	cart, err := convertCart(req.Cart)
-	if err != nil {
-		return nil, err
-	}
+	cart := convertCart(req.Cart)
 
 	cart, err = g.services.CartService.SaveCart(ctx, cart)
 
@@ -173,8 +170,6 @@ func (g *Gateway) AuthorizeOrder(ctx context.Context, req *proto.AuthorizeOrderR
 			return nil, err
 		}
 	}
-
-	order.Status = OrderStatusAdminPending
 
 	order, err = g.services.OrderService.SaveOrder(ctx, order)
 	if err != nil {

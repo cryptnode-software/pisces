@@ -69,6 +69,8 @@ func convertOrderToProto(order *Order) (result *proto.Order, err error) {
 
 	result.Due = due
 
+	result.Cart = convertCartToProto(order.Cart)
+
 	return
 }
 
@@ -76,12 +78,11 @@ func convertOrder(order *proto.Order) (result *Order, err error) {
 
 	result = new(Order)
 
-	due, err := ptypes.Timestamp(order.Due)
-	if err != nil {
+	result.PaymentMethod = convertPaymentMethod(order.PaymentMethod)
+
+	if result.Due, err = ptypes.Timestamp(order.Due); err != nil {
 		return nil, err
 	}
-
-	result.Due = due
 
 	if uuid, err := uuid.Parse(order.InquiryId); err == nil {
 		result.InquiryID = uuid
@@ -91,7 +92,6 @@ func convertOrder(order *proto.Order) (result *Order, err error) {
 		result.ID = uuid
 	}
 
-	result.PaymentMethod = convertPaymentMethod(order.PaymentMethod)
 	result.Status = convertOrderStatus(order.Status)
 	result.ExtID = order.ExtId
 	result.Total = order.Total
@@ -100,29 +100,26 @@ func convertOrder(order *proto.Order) (result *Order, err error) {
 		result.Inquiry = convertInquiry(order.Inquiry)
 	}
 
+	result.Cart = convertCart(order.Cart)
+
 	return
 
 }
 
-func convertCart(cart []*proto.CartContents) (result []*Cart, err error) {
+func convertCart(cart []*proto.CartContents) (result []*Cart) {
 	result = make([]*Cart, len(cart))
 
 	for i, pcontent := range cart {
+
 		content := new(Cart)
 
-		order, err := uuid.Parse(pcontent.OrderId)
-		if err != nil {
-			return nil, err
+		if product, err := uuid.Parse(pcontent.ProductId); err == nil {
+			content.ProductID = product
 		}
 
-		content.OrderID = order
-
-		product, err := uuid.Parse(pcontent.ProductId)
-		if err != nil {
-			return nil, err
+		if order, err := uuid.Parse(pcontent.OrderId); err == nil {
+			content.OrderID = order
 		}
-
-		content.ProductID = product
 
 		if id, err := uuid.Parse(pcontent.Id); err == nil {
 			content.ID = id
@@ -131,6 +128,7 @@ func convertCart(cart []*proto.CartContents) (result []*Cart, err error) {
 		content.Quantity = pcontent.Quantity
 
 		result[i] = content
+
 	}
 
 	return

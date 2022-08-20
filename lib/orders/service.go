@@ -138,10 +138,10 @@ func (r *repo) CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, e
 func (r *repo) UpdateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
 	err := r.DB.Model(new(lib.Order)).
 		Where("id = ?", order.ID).
-		Set("payment_method", order.PaymentMethod).
-		Set("status", order.Status).
-		Set("ext_id", order.ExtID).
-		Set("due", order.Due).
+		Update("payment_method", order.PaymentMethod).
+		Update("status", order.Status).
+		Update("ext_id", order.ExtID).
+		Update("due", order.Due).
 		Error
 
 	return order, err
