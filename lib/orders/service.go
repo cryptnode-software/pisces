@@ -141,24 +141,45 @@ func (r *repo) CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, e
 
 func (r *repo) UpdateOrder(ctx context.Context, order *lib.Order, conditions *lib.SaveConditions) (*lib.Order, error) {
 
-	r.DB.Transaction(func(db *gorm.DB) error {
-		db.Model(new(lib.Order)).
+	err := r.DB.Transaction(func(db *gorm.DB) error {
+		if err := db.Model(new(lib.Order)).
 			Where("id = ?", order.ID).
 			Update("payment_method", order.PaymentMethod).
-			Update("due", order.Due)
-
-		if conditions.Root || order.Status != lib.OrderStatusAccepted {
-			db.Update("status", order.Status)
+			Update("due", order.Due).Error; err != nil {
+			db.Rollback()
+			return err
 		}
 
-		if conditions.Root {
-			db.Update("ext_id", order.ExtID)
+		if order.Status != lib.OrderStatusAccepted || conditions.Root {
+			if err := db.Model(new(lib.Order)).
+				Where("id = ?", order.ID).
+				Update("status", order.Status).
+				Error; err != nil {
+
+				db.Rollback()
+				return err
+
+			}
+
 		}
 
-		return db.Commit().Error
+		if conditions.Root && order.ExtID != "" {
+
+			if err := db.Model(new(lib.Order)).
+				Where("id = ?", order.ID).
+				Update("ext_id", order.ExtID).
+				Error; err != nil {
+
+				db.Rollback()
+				return err
+
+			}
+		}
+
+		return nil
 	})
 
-	return order, nil
+	return order, err
 }
 
 func (r *repo) GetOrders(ctx context.Context, conditions *lib.OrderConditions) ([]*lib.Order, error) {

@@ -58,6 +58,10 @@ func (g *Gateway) SaveOrder(ctx context.Context, req *proto.SaveOrderRequest) (r
 
 	conditions := &SaveConditions{}
 
+	if _, err := g.services.AuthService.AuthenticateAdmin(ctx); err == nil {
+		conditions.Root = true
+	}
+
 	order, err = g.services.OrderService.SaveOrder(ctx, order, conditions)
 	if err != nil {
 		g.Env.Log.Error(err.Error())
@@ -67,21 +71,21 @@ func (g *Gateway) SaveOrder(ctx context.Context, req *proto.SaveOrderRequest) (r
 	if order.ExtID == "" {
 		switch order.PaymentMethod {
 		case PaymentMethodPaypal:
+			if order.Status == OrderStatusUserPending {
+				order, err = g.services.PaypalService.CreateOrder(ctx, order)
+				if err != nil {
+					g.Env.Log.Error(err.Error())
+					return nil, err
+				}
 
-			order, err = g.services.PaypalService.CreateOrder(ctx, order)
-			if err != nil {
-				g.Env.Log.Error(err.Error())
-				return nil, err
+				conditions.Root = true
+
+				order, err = g.services.OrderService.SaveOrder(ctx, order, conditions)
+				if err != nil {
+					g.Env.Log.Error(err.Error())
+					return nil, err
+				}
 			}
-
-			conditions.Root = true
-
-			order, err = g.services.OrderService.SaveOrder(ctx, order, conditions)
-			if err != nil {
-				g.Env.Log.Error(err.Error())
-				return nil, err
-			}
-
 		}
 	}
 
