@@ -56,28 +56,33 @@ func (g *Gateway) SaveOrder(ctx context.Context, req *proto.SaveOrderRequest) (r
 		return nil, err
 	}
 
-	if order.Inquiry == nil && order.InquiryID == uuid.Nil {
-		return nil, &errors.ErrInvalidRequest{
-			Fields: map[string]string{
-				"reason": "an inquiry is required to create an order, please include either the inquiry or inquiry id",
-			},
-		}
-	}
+	conditions := &SaveConditions{}
 
-	order, err = g.services.OrderService.SaveOrder(ctx, order)
+	order, err = g.services.OrderService.SaveOrder(ctx, order, conditions)
 	if err != nil {
 		g.Env.Log.Error(err.Error())
 		return nil, err
 	}
 
-	if order.Cart != nil || len(order.Cart) > 0 {
-		total, err := g.services.GetTotal(ctx, order)
-		if err != nil {
-			g.Env.Log.Error(err.Error())
-			return nil, err
-		}
+	if order.ExtID == "" {
+		switch order.PaymentMethod {
+		case PaymentMethodPaypal:
 
-		order.Total = total
+			order, err = g.services.PaypalService.CreateOrder(ctx, order)
+			if err != nil {
+				g.Env.Log.Error(err.Error())
+				return nil, err
+			}
+
+			conditions.Root = true
+
+			order, err = g.services.OrderService.SaveOrder(ctx, order, conditions)
+			if err != nil {
+				g.Env.Log.Error(err.Error())
+				return nil, err
+			}
+
+		}
 	}
 
 	o, err := convertOrderToProto(order)
@@ -107,86 +112,6 @@ func (g *Gateway) SaveCart(ctx context.Context, req *proto.SaveCartRequest) (res
 	return &proto.SaveCartResponse{
 		Cart: convertCartToProto(cart),
 	}, nil
-}
-
-//AuthorizeOrder handles the authorization of the provided order
-func (g *Gateway) AuthorizeOrder(ctx context.Context, req *proto.AuthorizeOrderRequest) (res *proto.AuthorizeOrderResponse, err error) {
-	uuid, err := uuid.Parse(req.OrderId)
-	if err != nil {
-		return
-	}
-
-	order, err := g.services.OrderService.GetOrder(ctx, uuid)
-	if err != nil {
-		return nil, err
-	}
-
-	if order == nil {
-		return nil, &errors.ErrInvalidRequest{
-			Fields: map[string]string{
-				"reason": fmt.Sprintf("order not found w/ order id %s", req.OrderId),
-			},
-		}
-	}
-
-	if order.Status != OrderStatusUserPending {
-		return nil, &errors.ErrInvalidRequest{
-			Fields: map[string]string{
-				"reason": fmt.Sprintf("order w/ the order id %s isn't in a state of user_pending", req.OrderId),
-			},
-		}
-	}
-
-	cart, err := g.services.CartService.GetCart(ctx, order)
-
-	if cart == nil || len(cart) <= 0 {
-		return nil, &errors.ErrInvalidRequest{
-			Fields: map[string]string{
-				"reason": fmt.Sprintf("order w/ the order id %s doesn't have a cart associated with it, please create one", req.OrderId),
-			},
-		}
-	}
-
-	if order.ExtID != "" {
-		return nil, &errors.ErrInvalidRequest{
-			Fields: map[string]string{
-				"reason": fmt.Sprintf("order w/ the order id %s already has an external id and has already been associated with a purchase", req.OrderId),
-			},
-		}
-	}
-
-	total, err := g.services.GetTotal(ctx, order)
-	if err != nil {
-		g.Env.Log.Error(err.Error())
-		return
-	}
-	order.Total = total
-
-	switch order.PaymentMethod {
-	case PaymentMethodPaypal:
-		order, err = g.services.PaypalService.CreateOrder(ctx, order)
-		if err != nil {
-			g.Env.Log.Error(err.Error())
-			return nil, err
-		}
-	}
-
-	order, err = g.services.OrderService.SaveOrder(ctx, order)
-	if err != nil {
-		g.Env.Log.Error(err.Error())
-		return nil, err
-	}
-
-	o, err := convertOrderToProto(order)
-	if err != nil {
-		return nil, err
-	}
-
-	res = &proto.AuthorizeOrderResponse{
-		Order: o,
-	}
-
-	return
 }
 
 //CreateUser route...
@@ -256,13 +181,6 @@ func (g *Gateway) GetOrders(ctx context.Context, req *proto.GetOrdersRequest) (r
 			return nil, err
 		}
 
-		total, err := g.services.GetTotal(ctx, order)
-		if err != nil {
-			return nil, err
-		}
-
-		order.Total = total
-
 		o, err := convertOrderToProto(order)
 		if err != nil {
 			return nil, err
@@ -291,17 +209,6 @@ func (g *Gateway) GetOrders(ctx context.Context, req *proto.GetOrdersRequest) (r
 	if err != nil {
 		g.Env.Log.Error(err.Error())
 		return nil, err
-	}
-
-	for i, order := range orders {
-		total, err := g.services.GetTotal(ctx, order)
-
-		if err != nil {
-			g.Env.Log.Error(err.Error())
-			return nil, err
-		}
-
-		orders[i].Total = total
 	}
 
 	o, err := convertOrdersToProto(orders)

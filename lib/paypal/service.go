@@ -48,6 +48,10 @@ func (service *Service) CreateOrder(ctx context.Context, order *lib.Order) (*lib
 		return nil, errors.New("no local order id associated with paypal order")
 	}
 
+	if order.ExtID != "" {
+		return nil, errors.New("ext id already exists on order, this method only supports new paypal orders")
+	}
+
 	porder, err := service.client.CreateOrder(
 		paypal.OrderIntentAuthorize, []paypal.PurchaseUnitRequest{
 			{

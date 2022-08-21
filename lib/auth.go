@@ -11,6 +11,13 @@ const (
 	authheader = "auth"
 )
 
+var (
+	pisces = &User{
+		Username: "pisces",
+		Admin:    true,
+	}
+)
+
 //AuthService represents our internal auth service mostly used for authenticating customers and
 //our admin employees
 type AuthService interface {
@@ -32,9 +39,9 @@ type LoginRequest struct {
 
 //User the general public structure of a user through out the ecosystem
 type User struct {
-	Admin    bool   `json:"admin" gorm:"not null; default:false;"`
-	Username string `json:"username" gorm:"not null;"`
-	Email    string `json:"email" gorm:"not null;"`
+	Username string `json:"username" gorm:"not null"`
+	Admin    bool   `json:"admin" gorm:"not null"`
+	Email    string `json:"email" gorm:"not null"`
 	Model
 }
 
@@ -74,7 +81,6 @@ func GetAuthFromContext(ctx context.Context) (string, error) {
 }
 
 func SetAuthContext(ctx context.Context, token string) context.Context {
-
 	return metadata.NewIncomingContext(ctx, metadata.MD{
 		"auth": []string{
 			token,

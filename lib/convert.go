@@ -107,6 +107,9 @@ func convertOrder(order *proto.Order) (result *Order, err error) {
 }
 
 func convertCart(cart []*proto.CartContents) (result []*Cart) {
+	if cart == nil {
+		return nil
+	}
 	result = make([]*Cart, len(cart))
 
 	for i, pcontent := range cart {
@@ -135,6 +138,10 @@ func convertCart(cart []*proto.CartContents) (result []*Cart) {
 }
 
 func convertCartToProto(cart []*Cart) (result []*proto.CartContents) {
+	if cart == nil {
+		return nil
+	}
+
 	result = make([]*proto.CartContents, len(cart))
 
 	for i, content := range cart {

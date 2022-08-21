@@ -6,10 +6,9 @@ import (
 
 	"github.com/cryptnode-software/pisces/lib"
 	clib "github.com/cryptnode-software/pisces/lib"
+	"github.com/cryptnode-software/pisces/lib/gorm"
 	_ "github.com/go-sql-driver/mysql"
 	paylib "github.com/plutov/paypal"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 const (
@@ -87,31 +86,22 @@ func NewEnv(logger clib.Logger) *clib.Env {
 	}
 
 	{
-
-		db, err := gorm.Open(mysql.New(mysql.Config{
-			DSN:                       os.Getenv(envDatabaseURL),
-			SkipInitializeWithVersion: false,
-			DisableDatetimePrecision:  true,
-			DontSupportRenameIndex:    true,
-			DontSupportRenameColumn:   true,
-			DefaultStringSize:         256,
-		}))
-
+		var err error
+		result.GormDB, err = gorm.NewDatabase(os.Getenv(envDatabaseURL))
 		if err != nil {
 			log.Fatal(err)
 			return nil
 		}
 
-		result.GormDB = db
+		// result.GormDB = db
 
-		db.AutoMigrate(
+		result.GormDB.AutoMigrate(
 			new(lib.Inquiry),
 			new(lib.Product),
 			new(lib.Order),
 			new(lib.Cart),
 			new(user),
 		)
-
 	}
 
 	//aws config

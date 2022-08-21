@@ -15,3 +15,7 @@ func (model *Model) BeforeCreate(tx *gorm.DB) error {
 	model.ID = id
 	return err
 }
+
+type SaveConditions struct {
+	Root bool
+}

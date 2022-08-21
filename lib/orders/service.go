@@ -45,7 +45,7 @@ func (s *Service) GetInquiry(ctx context.Context, id uuid.UUID) (*lib.Inquiry, e
 
 //SaveOrder will either create a new order (if required, i.e. the ID property is empty). Or
 //will update a preexisting one.
-func (s *Service) SaveOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
+func (s *Service) SaveOrder(ctx context.Context, order *lib.Order, conditions *lib.SaveConditions) (*lib.Order, error) {
 
 	//inquiry should be required to create/update a order
 	if order.Inquiry == nil && order.InquiryID == uuid.Nil {
@@ -60,7 +60,7 @@ func (s *Service) SaveOrder(ctx context.Context, order *lib.Order) (*lib.Order, 
 	}
 
 	//otherwise update a preexisting order
-	return s.repo.UpdateOrder(ctx, order)
+	return s.repo.UpdateOrder(ctx, order, conditions)
 }
 
 //SaveInquiry will either create a new inquiry or update a pre-existing one. The optional
@@ -105,12 +105,12 @@ func (s *Service) DeleteInquiry(ctx context.Context, inquiry *lib.Inquiry, condi
 }
 
 type repoi interface {
+	UpdateOrder(ctx context.Context, order *lib.Order, conditions *lib.SaveConditions) (*lib.Order, error)
 	GetInquires(ctx context.Context, conditions *lib.GetInquiryConditions) ([]*lib.Inquiry, error)
 	UpdateInquiry(ctx context.Context, inquiry *lib.Inquiry) (*lib.Inquiry, error)
 	CreateInquiry(ctx context.Context, inquiry *lib.Inquiry) (*lib.Inquiry, error)
 	GetOrders(context.Context, *lib.OrderConditions) ([]*lib.Order, error)
 	CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error)
-	UpdateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error)
 	GetInquiry(ctx context.Context, id uuid.UUID) (*lib.Inquiry, error)
 	GetOrder(ctx context.Context, id uuid.UUID) (*lib.Order, error)
 	HardDeleteOrder(ctx context.Context, order *lib.Order) error
@@ -132,19 +132,33 @@ func (r *repo) GetInquiry(ctx context.Context, id uuid.UUID) (inquiry *lib.Inqui
 func (r *repo) CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
 	err := r.DB.Save(order).Error
 
+	if order, err = r.LoadOrderTotal(ctx, order); err != nil {
+		return nil, err
+	}
+
 	return order, err
 }
 
-func (r *repo) UpdateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
-	err := r.DB.Model(new(lib.Order)).
-		Where("id = ?", order.ID).
-		Update("payment_method", order.PaymentMethod).
-		Update("status", order.Status).
-		Update("ext_id", order.ExtID).
-		Update("due", order.Due).
-		Error
+func (r *repo) UpdateOrder(ctx context.Context, order *lib.Order, conditions *lib.SaveConditions) (*lib.Order, error) {
 
-	return order, err
+	r.DB.Transaction(func(db *gorm.DB) error {
+		db.Model(new(lib.Order)).
+			Where("id = ?", order.ID).
+			Update("payment_method", order.PaymentMethod).
+			Update("due", order.Due)
+
+		if conditions.Root || order.Status != lib.OrderStatusAccepted {
+			db.Update("status", order.Status)
+		}
+
+		if conditions.Root {
+			db.Update("ext_id", order.ExtID)
+		}
+
+		return db.Commit().Error
+	})
+
+	return order, nil
 }
 
 func (r *repo) GetOrders(ctx context.Context, conditions *lib.OrderConditions) ([]*lib.Order, error) {
@@ -157,6 +171,7 @@ func (r *repo) GetOrders(ctx context.Context, conditions *lib.OrderConditions) (
 		if conditions.Status != lib.OrderStatusNotImplemented {
 			if err := tx.Model(new(lib.Order)).
 				Preload("Inquiry").
+				Preload("Cart").
 				Where("status = ?", conditions.Status).
 				Find(&result).Error; err != nil {
 				return nil, err
@@ -165,9 +180,17 @@ func (r *repo) GetOrders(ctx context.Context, conditions *lib.OrderConditions) (
 	}
 
 	if conditions == nil {
-		if err := r.DB.Preload("Inquiry").Find(&result).Error; err != nil {
+		if err := r.DB.Preload("Inquiry").Preload("Cart").Find(&result).Error; err != nil {
 			return nil, err
 		}
+	}
+
+	for i, order := range result {
+		order, err := r.LoadOrderTotal(ctx, order)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = order
 	}
 
 	if tx.Error != nil {
@@ -178,9 +201,8 @@ func (r *repo) GetOrders(ctx context.Context, conditions *lib.OrderConditions) (
 }
 
 func (r *repo) GetOrder(ctx context.Context, id uuid.UUID) (order *lib.Order, err error) {
-	order = new(lib.Order)
-	r.DB.Preload("Inquiry").Model(new(lib.Order)).First(order, "id = ?", id)
-
+	r.DB.Preload("Inquiry").Preload("Cart").Model(new(lib.Order)).First(&order, "id = ?", id)
+	order, err = r.LoadOrderTotal(ctx, order)
 	return
 }
 
@@ -232,4 +254,14 @@ func (r *repo) HardDeleteInquiry(ctx context.Context, inquiry *lib.Inquiry) erro
 
 func (r *repo) SoftDeleteInquiry(ctx context.Context, inquiry *lib.Inquiry) error {
 	return r.DB.Delete(inquiry).Error
+}
+
+func (r *repo) LoadOrderTotal(ctx context.Context, order *lib.Order) (*lib.Order, error) {
+
+	for _, cart := range order.Cart {
+		r.DB.Model(new(lib.Product)).First(&cart.Product, "id = ?", cart.ProductID)
+		order.Total += float32(cart.Quantity) * cart.Product.Cost
+	}
+
+	return order, nil
 }

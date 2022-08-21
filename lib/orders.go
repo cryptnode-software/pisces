@@ -18,7 +18,7 @@ type OrderService interface {
 	SaveInquiry(context.Context, *Inquiry) (*Inquiry, error)
 	GetOrder(ctx context.Context, id uuid.UUID) (*Order, error)
 	ArchiveOrder(context.Context, *Order) (*Order, error)
-	SaveOrder(context.Context, *Order) (*Order, error)
+	SaveOrder(context.Context, *Order, *SaveConditions) (*Order, error)
 }
 
 //OrderConditions defines the different conditions that

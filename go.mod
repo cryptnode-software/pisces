@@ -13,6 +13,7 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/improbable-eng/grpc-web v0.15.0
+	github.com/magefile/mage v1.13.0
 	github.com/plutov/paypal v2.0.5+incompatible
 	github.com/stretchr/testify v1.7.0
 	go.buf.build/grpc/go/thenewlebowski/pisces v1.4.9
@@ -42,6 +43,7 @@ require (
 	github.com/klauspost/compress v1.11.7 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rs/cors v1.7.0 // indirect
+	github.com/stretchr/piglatin v0.0.0-20140311054444-ab61287b9936 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect

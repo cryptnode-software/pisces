@@ -150,7 +150,7 @@ func TestSaveOrder(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		order, err := service.SaveOrder(ctx, &table.order)
+		order, err := service.SaveOrder(ctx, &table.order, nil)
 
 		if err != nil {
 			t.Error(err)
@@ -184,7 +184,7 @@ func TestFailSaveOrder(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		_, err := service.SaveOrder(ctx, &table.order)
+		_, err := service.SaveOrder(ctx, &table.order, nil)
 		if err == nil {
 			t.Error(errors.New("order successfully saved when it was suppose to fail"))
 		}
@@ -212,6 +212,7 @@ func TestGetOrder(t *testing.T) {
 					FirstName:   "test",
 					LastName:    "user",
 				},
+				Cart: make([]*lib.Cart, 0),
 			},
 		},
 	}
@@ -323,7 +324,7 @@ func seed[T *lib.Order | *lib.Inquiry](models []T) error {
 				return err
 			}
 		case *lib.Order:
-			_, err := service.SaveOrder(ctx, model)
+			_, err := service.SaveOrder(ctx, model, nil)
 
 			if err != nil {
 				return err
