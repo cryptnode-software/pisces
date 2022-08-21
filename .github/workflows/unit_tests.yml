@@ -41,12 +41,6 @@ jobs:
 
     - name: Run migrations
       run: cd ./db && sql-migrate up -env schema
-
-    - name: Run Mage
-      uses: magefile/mage-action@v2
-      with:
-        version: latest
-        args: build
     
     - name : Unit Test
       run: go test -v ./...
