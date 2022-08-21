@@ -42,12 +42,11 @@ jobs:
     - name: Run migrations
       run: cd ./db && sql-migrate up -env schema
 
-    - name: Set up mage
-      run: go install github.com/magefile/mage@latest
-    
-    - name: Run mage
-      run: mage build
-
+    - name: Run Mage
+      uses: magefile/mage-action@v2
+      with:
+        version: latest
+        args: build
     
     - name : Unit Test
       run: go test -v ./...
