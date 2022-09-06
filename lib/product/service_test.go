@@ -130,8 +130,16 @@ func TestSoftDeleteProduct(t *testing.T) {
 		}
 
 		p.Model = product.Model
+		p.Model = product.Model
 
 		assert.Equal(t, p, product)
+
+		if err := deseed([]*lib.Product{
+			product,
+		}); err != nil {
+			t.Error(err)
+			return
+		}
 	}
 }
 
@@ -160,9 +168,12 @@ func TestSaveProduct(t *testing.T) {
 			return
 		}
 
-		table.product = product
-
-		assert.Equal(t, table.product, product)
+		if err := deseed([]*lib.Product{
+			product,
+		}); err != nil {
+			t.Error(err)
+			return
+		}
 
 	}
 
