@@ -45,7 +45,7 @@ jobs:
       run: go install github.com/rubenv/sql-migrate/...@latest
 
     - name: Run migrations
-      run: cd ./db && sql-migrate up -env schema
+      run: cd ./db && sql-migrate up -env schema && sql-migrate up -env app
     
     - name : Unit Test
       run: go test -v ./...

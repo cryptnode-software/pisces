@@ -66,9 +66,12 @@ func TestSaveInquiry(t *testing.T) {
 
 		assert.Equal(t, table.expected, *inquiry)
 
-		deseed([]*lib.Inquiry{
+		if err := deseed([]*lib.Inquiry{
 			inquiry,
-		})
+		}); err != nil {
+			t.Error(err)
+			continue
+		}
 	}
 }
 
@@ -93,9 +96,12 @@ func TestGetInquiry(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		seed([]*lib.Inquiry{
+		if err := seed([]*lib.Inquiry{
 			table.inquiry,
-		})
+		}); err != nil {
+			t.Error(err)
+			continue
+		}
 
 		inquiry, err := service.GetInquiry(ctx, table.inquiry.ID)
 		if err != nil {
@@ -108,7 +114,10 @@ func TestGetInquiry(t *testing.T) {
 
 		assert.Equal(t, table.inquiry, inquiry)
 
-		deseed([]*lib.Inquiry{table.inquiry})
+		if err := deseed([]*lib.Inquiry{table.inquiry}); err != nil {
+			t.Error(err)
+			continue
+		}
 	}
 }
 
@@ -164,9 +173,12 @@ func TestSaveOrder(t *testing.T) {
 
 		assert.Equal(t, table.expected, order)
 
-		deseed([]*lib.Order{
+		if err := deseed([]*lib.Order{
 			order,
-		})
+		}); err != nil {
+			t.Error(err)
+			return
+		}
 	}
 }
 
@@ -202,6 +214,7 @@ func TestGetOrder(t *testing.T) {
 	}{
 		{
 			order: lib.Order{
+
 				PaymentMethod: lib.PaymentMethodNotImplemented,
 				Status:        lib.OrderStatusNotImplemented,
 				Due:           time.Now().Add(60 * 24),
@@ -220,16 +233,19 @@ func TestGetOrder(t *testing.T) {
 	for _, table := range tables {
 		expected := &table.order
 
-		seed([]*lib.Order{
+		if err := seed([]*lib.Order{
 			expected,
-		})
-
-		if err != nil {
+		}); err != nil {
 			t.Error(err)
 			continue
 		}
 
 		order, err = service.GetOrder(ctx, expected.ID)
+
+		if err != nil {
+			t.Error(err)
+			continue
+		}
 
 		expected.Inquiry.CreatedAt = order.Inquiry.CreatedAt
 		expected.Inquiry.UpdatedAt = order.Inquiry.UpdatedAt
@@ -294,7 +310,10 @@ func TestGetOrders(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		seed(table.expected)
+		if err := seed(table.expected); err != nil {
+			t.Error(err)
+			return
+		}
 
 		orders, err := service.GetOrders(ctx, &lib.OrderConditions{
 			Status: table.status,
@@ -318,13 +337,20 @@ func seed[T *lib.Order | *lib.Inquiry](models []T) error {
 	for _, model := range models {
 		switch model := any(model).(type) {
 		case *lib.Inquiry:
-			_, err := service.SaveInquiry(ctx, model)
-
+			inquiry, err := service.SaveInquiry(ctx, model)
+			model = inquiry
 			if err != nil {
 				return err
 			}
 		case *lib.Order:
-			_, err := service.SaveOrder(ctx, model, nil)
+			inquiry, err := service.SaveInquiry(ctx, model.Inquiry)
+			if err != nil {
+				return err
+			}
+			model.Inquiry = inquiry
+
+			order, err := service.SaveOrder(ctx, model, nil)
+			model = order
 
 			if err != nil {
 				return err

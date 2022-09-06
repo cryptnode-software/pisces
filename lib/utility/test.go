@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/cryptnode-software/pisces/lib"
 	clib "github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/gorm"
 	_ "github.com/go-sql-driver/mysql"
@@ -92,16 +91,6 @@ func NewEnv(logger clib.Logger) *clib.Env {
 			log.Fatal(err)
 			return nil
 		}
-
-		// result.GormDB = db
-
-		result.GormDB.AutoMigrate(
-			new(lib.Inquiry),
-			new(lib.Product),
-			new(lib.Order),
-			new(lib.Cart),
-			new(user),
-		)
 	}
 
 	//aws config
@@ -129,9 +118,4 @@ func NewEnv(logger clib.Logger) *clib.Env {
 	}
 
 	return result
-}
-
-type user struct {
-	Password string `gorm:"not null;"`
-	clib.User
 }

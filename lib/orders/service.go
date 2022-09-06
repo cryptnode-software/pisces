@@ -129,14 +129,19 @@ func (r *repo) GetInquiry(ctx context.Context, id uuid.UUID) (inquiry *lib.Inqui
 	return
 }
 
-func (r *repo) CreateOrder(ctx context.Context, order *lib.Order) (*lib.Order, error) {
-	err := r.DB.Save(order).Error
+func (r *repo) CreateOrder(ctx context.Context, order *lib.Order) (result *lib.Order, err error) {
 
-	if order, err = r.LoadOrderTotal(ctx, order); err != nil {
+	result = new(lib.Order)
+
+	if err = r.DB.Save(order).Error; err != nil {
 		return nil, err
 	}
 
-	return order, err
+	if result, err = r.LoadOrderTotal(ctx, order); err != nil {
+		return nil, err
+	}
+
+	return
 }
 
 func (r *repo) UpdateOrder(ctx context.Context, order *lib.Order, conditions *lib.SaveConditions) (*lib.Order, error) {

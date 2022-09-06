@@ -11,6 +11,7 @@ import (
 //OrderService represents the OrderService interface
 type OrderService interface {
 	GetInquires(ctx context.Context, conditions *GetInquiryConditions) ([]*Inquiry, error)
+	SaveOrder(context.Context, *Order, *SaveConditions) (*Order, error)
 	DeleteOrder(context.Context, *Order, *DeleteConditions) error
 	DeleteInquiry(context.Context, *Inquiry, *DeleteConditions) error
 	GetOrders(context.Context, *OrderConditions) ([]*Order, error)
@@ -18,7 +19,6 @@ type OrderService interface {
 	SaveInquiry(context.Context, *Inquiry) (*Inquiry, error)
 	GetOrder(ctx context.Context, id uuid.UUID) (*Order, error)
 	ArchiveOrder(context.Context, *Order) (*Order, error)
-	SaveOrder(context.Context, *Order, *SaveConditions) (*Order, error)
 }
 
 //OrderConditions defines the different conditions that
@@ -49,14 +49,14 @@ type OrderID string
 
 //Order the general structure of an order
 type Order struct {
+	Inquiry       *Inquiry `gorm:"references:ID"`
+	Total         float32  `gorm:"-"`
 	PaymentMethod PaymentMethod
 	Status        OrderStatus
-	Total         float32 `gorm:"-"`
-	ExtID         string
-	Due           time.Time
-	Inquiry       *Inquiry `gorm:"references:ID"`
 	InquiryID     uuid.UUID
+	Due           time.Time
 	Cart          []*Cart
+	ExtID         string
 	Model
 }
 
