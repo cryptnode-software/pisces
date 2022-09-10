@@ -6,7 +6,6 @@ import (
 
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/auth"
-	"github.com/cryptnode-software/pisces/lib/utility"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,7 +25,7 @@ var (
 	}
 )
 
-var env = utility.NewEnv(utility.NewLogger())
+var env = lib.NewEnv(lib.NewLogger(lib.EnvDev))
 var service, err = auth.NewService(env)
 
 func TestGenerateAndDecodeJWT(t *testing.T) {

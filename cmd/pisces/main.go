@@ -2,28 +2,22 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
+	"os"
 
-	// "github.com/aws/aws-sdk-go-v3/aws/session"
-	// "github.com/aws/aws-sdk-go-v3/service/s3"
-
-	clib "github.com/cryptnode-software/pisces/lib"
+	pisces "github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/utility"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	paylib "github.com/plutov/paypal"
 	proto "go.buf.build/grpc/go/thenewlebowski/pisces/general/v1"
 	"google.golang.org/grpc"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 
 	_ "github.com/go-sql-driver/mysql"
 
 	"flag"
 	"fmt"
-	"log"
-	"os"
 )
 
 var (
@@ -76,9 +70,16 @@ func main() {
 	port := flag.Int("port", 4081, "grpc port")
 
 	flag.Parse()
-	environment := NewEnv(NewLogger())
 
-	gw, err := clib.NewGateway(environment, utility.Services(environment))
+	environ := pisces.Environment(os.Getenv(env))
+	if environ == "" {
+		log.Fatalf("environment is not provided: please provide %s variable", env)
+		return
+	}
+
+	environment := pisces.NewEnv(pisces.NewLogger(environ))
+
+	gw, err := pisces.NewGateway(environment, utility.Services(environment))
 	if err != nil {
 		panic(err)
 	}
@@ -89,6 +90,7 @@ func main() {
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(
+
 				grpc_recovery.UnaryServerInterceptor(
 					grpc_recovery.WithRecoveryHandlerContext(
 						func(ctx context.Context, p interface{}) error {
@@ -146,111 +148,100 @@ func main() {
 }
 
 //NewLogger returns a new logger based off the current environment
-func NewLogger() clib.Logger {
-	environ := os.Getenv(env)
-	if environ == "" {
-		log.Fatalf("environment is not provided: please provide %s variable", env)
-		return nil
-	}
+// func NewLogger() clib.Logger {
+// 	environ := os.Getenv(env)
+// 	if environ == "" {
+// 		log.Fatalf("environment is not provided: please provide %s variable", env)
+// 		return nil
+// 	}
 
-	return clib.NewZapper(clib.Environment(environ))
-}
+// 	return clib.NewZapper(clib.Environment(environ))
+// }
 
-//NewEnv returns a new environment pre-populated with the provided logger
-func NewEnv(logger clib.Logger) *clib.Env {
-	environ := os.Getenv(env)
-	if environ == "" {
-		log.Fatalf("environment is not provided: please provide %s variable", env)
-		return nil
-	}
+// //NewEnv returns a new environment pre-populated with the provided logger
+// func NewEnv(logger clib.Logger) *clib.Env {
+// 	environ := os.Getenv(env)
+// 	if environ == "" {
+// 		log.Fatalf("environment is not provided: please provide %s variable", env)
+// 		return nil
+// 	}
 
-	result := &clib.Env{
-		Environment: clib.Environment(environ),
-		Log:         logger,
-	}
+// 	result := &clib.Env{
+// 		Environment: clib.Environment(environ),
+// 		Log:         logger,
+// 	}
 
-	//paypal config
-	{
-		client := os.Getenv(envPaypalClientID)
-		if client == "" {
-			log.Fatalf("paypal client id not provided please provide %s env variable", envPaypalClientID)
-		}
+// 	//paypal config
+// 	{
+// 		client := os.Getenv(envPaypalClientID)
+// 		if client == "" {
+// 			log.Fatalf("paypal client id not provided please provide %s env variable", envPaypalClientID)
+// 		}
 
-		secret := os.Getenv(envPaypalSecretID)
-		if secret == "" {
-			log.Fatalf("paypal secret id not provided please provide %s env variable", envPaypalSecretID)
-		}
+// 		secret := os.Getenv(envPaypalSecretID)
+// 		if secret == "" {
+// 			log.Fatalf("paypal secret id not provided please provide %s env variable", envPaypalSecretID)
+// 		}
 
-		result.PaypalEnv = &clib.PaypalEnv{
-			ClientID: client,
-			SecretID: secret,
-		}
+// 		result.PaypalEnv = &clib.PaypalEnv{
+// 			ClientID: client,
+// 			SecretID: secret,
+// 		}
 
-		switch result.Environment {
-		case clib.EnvProd:
-			result.PaypalEnv.Host = paylib.APIBaseLive
-		default:
-			result.PaypalEnv.Host = paylib.APIBaseSandBox
-		}
-	}
+// 		switch result.Environment {
+// 		case clib.EnvProd:
+// 			result.PaypalEnv.Host = paylib.APIBaseLive
+// 		default:
+// 			result.PaypalEnv.Host = paylib.APIBaseSandBox
+// 		}
+// 	}
 
-	//auth config
-	{
-		jwtSecret := os.Getenv(envJWTSecret)
-		if jwtSecret == "" {
-			log.Fatalf("%s not set, if not properly set jwt tokens will be unsafe to use", envJWTSecret)
-		}
+// 	//auth config
+// 	{
+// 		jwtSecret := os.Getenv(envJWTSecret)
+// 		if jwtSecret == "" {
+// 			log.Fatalf("%s not set, if not properly set jwt tokens will be unsafe to use", envJWTSecret)
+// 		}
 
-		result.JWTEnv = &clib.JWTEnv{
-			Secret: jwtSecret,
-		}
-	}
+// 		result.JWTEnv = &clib.JWTEnv{
+// 			Secret: jwtSecret,
+// 		}
+// 	}
 
-	//database config
-	{
+// 	//database config
+// 	{
 
-		db, err := gorm.Open(mysql.New(mysql.Config{
-			DSN:                       os.Getenv(envDatabaseURL),
-			SkipInitializeWithVersion: false,
-			DisableDatetimePrecision:  true,
-			DontSupportRenameIndex:    true,
-			DontSupportRenameColumn:   true,
-			DefaultStringSize:         256,
-		}))
+// 		var err error
+// 		if result.GormDB, err = pgorm.NewDatabase(os.Getenv(envDatabaseURL)); err != nil {
+// 			log.Fatalf("%+v", err)
+// 			return nil
+// 		}
+// 	}
 
-		if err != nil {
-			log.Fatal(err)
-			return nil
-		}
+// 	//aws config
+// 	{
+// 		config := new(clib.AWSEnv)
+// 		if config.Region = os.Getenv(envS3Region); config.Region == "" {
+// 			log.Fatalf("%s not, and required for s3 configuration", envS3Region)
+// 		}
+// 		if config.AccessKey = os.Getenv(envS3AccessKey); config.AccessKey == "" {
+// 			log.Fatalf("%s not set and required for s3 configuration", envS3AccessKey)
+// 		}
+// 		if config.Bucket = os.Getenv(envS3Bucket); config.Bucket == "" {
+// 			log.Fatalf("%s not set and required for s3 configuration", envS3Bucket)
+// 		}
+// 		if config.SecretKey = os.Getenv(envS3SecretKey); config.SecretKey == "" {
+// 			log.Fatalf("%s not set and required for s3 configuration", envS3SecretKey)
+// 		}
 
-		result.GormDB = db
+// 		//optional aws configuration
+// 		endpoint := os.Getenv(envS3Endpoint)
+// 		if config.Endpoint = &endpoint; config.Endpoint == nil {
+// 			logger.Error("%s is not set, defaulting to aws endpoint", envS3Endpoint)
+// 		}
 
-	}
+// 		result.AWSEnv = config
+// 	}
 
-	//aws config
-	{
-		config := new(clib.AWSEnv)
-		if config.Region = os.Getenv(envS3Region); config.Region == "" {
-			log.Fatalf("%s not, and required for s3 configuration", envS3Region)
-		}
-		if config.AccessKey = os.Getenv(envS3AccessKey); config.AccessKey == "" {
-			log.Fatalf("%s not set and required for s3 configuration", envS3AccessKey)
-		}
-		if config.Bucket = os.Getenv(envS3Bucket); config.Bucket == "" {
-			log.Fatalf("%s not set and required for s3 configuration", envS3Bucket)
-		}
-		if config.SecretKey = os.Getenv(envS3SecretKey); config.SecretKey == "" {
-			log.Fatalf("%s not set and required for s3 configuration", envS3SecretKey)
-		}
-
-		//optional aws configuration
-		endpoint := os.Getenv(envS3Endpoint)
-		if config.Endpoint = &endpoint; config.Endpoint == nil {
-			logger.Error("%s is not set, defaulting to aws endpoint", envS3Endpoint)
-		}
-
-		result.AWSEnv = config
-	}
-
-	return result
-}
+// 	return result
+// }

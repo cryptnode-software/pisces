@@ -12,7 +12,7 @@ import (
 
 var (
 	gateway, err = lib.NewGateway(env, utility.Services(env))
-	env          = utility.NewEnv(utility.NewLogger())
+	env          = lib.NewEnv(lib.NewLogger(lib.EnvDev))
 )
 
 func TestGetSignedURL(t *testing.T) {

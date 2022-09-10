@@ -8,12 +8,11 @@ import (
 
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/orders"
-	"github.com/cryptnode-software/pisces/lib/utility"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	service, err = orders.NewService(utility.NewEnv(utility.NewLogger()))
+	service, err = orders.NewService(lib.NewEnv(lib.NewLogger(lib.EnvDev)))
 
 	inquiry = &lib.Inquiry{
 		Description: "some test description",
@@ -179,6 +178,13 @@ func TestSaveOrder(t *testing.T) {
 			t.Error(err)
 			return
 		}
+
+		if err := deseed([]*lib.Inquiry{
+			order.Inquiry,
+		}); err != nil {
+			t.Error(err)
+			continue
+		}
 	}
 }
 
@@ -247,11 +253,10 @@ func TestGetOrder(t *testing.T) {
 			continue
 		}
 
-		expected.Inquiry.CreatedAt = order.Inquiry.CreatedAt
-		expected.Inquiry.UpdatedAt = order.Inquiry.UpdatedAt
+		expected.Inquiry.Model = order.Inquiry.Model
+		expected.InquiryID = order.InquiryID
 
-		expected.CreatedAt = order.CreatedAt
-		expected.UpdatedAt = order.UpdatedAt
+		expected.Model = order.Model
 
 		expected.Due = order.Due
 
@@ -260,6 +265,13 @@ func TestGetOrder(t *testing.T) {
 		deseed([]*lib.Order{
 			expected,
 		})
+
+		if err := deseed([]*lib.Inquiry{
+			order.Inquiry,
+		}); err != nil {
+			t.Error(err)
+			continue
+		}
 	}
 }
 
@@ -328,7 +340,20 @@ func TestGetOrders(t *testing.T) {
 			assert.Equal(t, orders[i], o)
 		}
 
-		deseed(table.expected)
+		if err := deseed(table.expected); err != nil {
+			t.Error(err)
+			return
+		}
+
+		for _, order := range table.expected {
+			if err := deseed([]*lib.Inquiry{
+				order.Inquiry,
+			}); err != nil {
+				t.Error(err)
+				continue
+			}
+		}
+
 	}
 
 }
@@ -371,6 +396,17 @@ func deseed[T *lib.Order | *lib.Inquiry](models []T) error {
 			if err != nil {
 				return err
 			}
+
+			if model.Inquiry != nil {
+				err = service.DeleteInquiry(ctx, model.Inquiry, &lib.DeleteConditions{
+					HardDelete: true,
+				})
+
+				if err != nil {
+					return err
+				}
+			}
+
 		case *lib.Inquiry:
 			err := service.DeleteInquiry(ctx, model, &lib.DeleteConditions{
 				HardDelete: true,

@@ -6,12 +6,11 @@ import (
 
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/paypal"
-	"github.com/cryptnode-software/pisces/lib/utility"
 	"github.com/google/uuid"
 )
 
 var (
-	env = utility.NewEnv(utility.NewLogger())
+	env = lib.NewEnv(lib.NewLogger(lib.EnvDev))
 
 	service, err = paypal.NewService(env)
 

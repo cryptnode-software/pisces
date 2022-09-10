@@ -1,6 +1,8 @@
 package lib
 
 import (
+	"log"
+
 	"go.uber.org/zap"
 )
 
@@ -91,4 +93,14 @@ func (z *Zapper) Fatal(msg string, keysAndValues ...interface{}) {
 // Close handles any clean up that needs to be taken care of
 func (z *Zapper) Close() {
 	z.logger.Sync() // flushes buffer, if any
+}
+
+//NewLogger returns a new logger based off the current environment
+func NewLogger(env Environment) Logger {
+
+	if env == "" {
+		log.Fatalf("environment is not provided: please provide %s variable", env)
+	}
+
+	return NewZapper(env)
 }

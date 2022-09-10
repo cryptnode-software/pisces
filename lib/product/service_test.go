@@ -7,12 +7,11 @@ import (
 
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/product"
-	"github.com/cryptnode-software/pisces/lib/utility"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	env = utility.NewEnv(utility.NewLogger())
+	env = lib.NewEnv(lib.NewLogger(lib.EnvDev))
 
 	service, err = product.NewService(env)
 

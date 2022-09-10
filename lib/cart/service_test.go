@@ -1,14 +1,14 @@
 package cart_test
 
 import (
+	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/cart"
-	"github.com/cryptnode-software/pisces/lib/utility"
 )
 
 var (
 	service, err = cart.NewService(
-		utility.NewEnv(
-			utility.NewLogger(),
+		lib.NewEnv(
+			lib.NewLogger(lib.EnvDev),
 		),
 	)
 )
