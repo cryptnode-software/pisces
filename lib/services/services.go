@@ -1,4 +1,4 @@
-package utility
+package services
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/cryptnode-software/pisces/lib/product"
 )
 
-func Services(env *lib.Env) (services *lib.Services) {
+func New(env *lib.Env) (services *lib.Services) {
 	return &lib.Services{
 		ProductService: productservice(env),
 		PaypalService:  paypalservice(env),

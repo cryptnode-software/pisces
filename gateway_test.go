@@ -6,12 +6,12 @@ import (
 	"testing"
 
 	"github.com/cryptnode-software/pisces/lib"
-	"github.com/cryptnode-software/pisces/lib/utility"
+	"github.com/cryptnode-software/pisces/lib/services"
 	v1 "go.buf.build/grpc/go/thenewlebowski/pisces/general/v1"
 )
 
 var (
-	gateway, err = lib.NewGateway(env, utility.Services(env))
+	gateway, err = lib.NewGateway(env, services.New(env))
 	env          = lib.NewEnv(lib.NewLogger(lib.EnvDev))
 )
 

@@ -7,7 +7,7 @@ import (
 	"os"
 
 	pisces "github.com/cryptnode-software/pisces/lib"
-	"github.com/cryptnode-software/pisces/lib/utility"
+	"github.com/cryptnode-software/pisces/lib/services"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
@@ -79,7 +79,7 @@ func main() {
 
 	environment := pisces.NewEnv(pisces.NewLogger(environ))
 
-	gw, err := pisces.NewGateway(environment, utility.Services(environment))
+	gw, err := pisces.NewGateway(environment, services.New(environment))
 	if err != nil {
 		panic(err)
 	}
