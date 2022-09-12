@@ -211,14 +211,6 @@ func convertOrderStatusToProto(status OrderStatus) (result proto.OrderStatus) {
 	return
 }
 
-func convertUserFromProto(user *proto.User) *User {
-	return &User{
-		Username: user.Username,
-		Email:    user.Email,
-		Admin:    user.Admin,
-	}
-}
-
 func convertInquiresToProto(inquires []*Inquiry) []*proto.Inquiry {
 	result := make([]*proto.Inquiry, len(inquires))
 

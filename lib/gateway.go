@@ -118,29 +118,6 @@ func (g *Gateway) SaveCart(ctx context.Context, req *proto.SaveCartRequest) (res
 	}, nil
 }
 
-//CreateUser route...
-func (g *Gateway) CreateUser(ctx context.Context, req *proto.CreateUserRequest) (*proto.JWT, error) {
-	logger := g.Env.Log.With("function", "CreateUser", "ctx", ctx)
-
-	user := convertUserFromProto(req.User)
-
-	user, err := g.services.AuthService.CreateUser(ctx, user, req.Password)
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, err
-	}
-
-	jwt, err := g.services.AuthService.GenerateJWT(ctx, user)
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, err
-	}
-
-	return &proto.JWT{
-		Jwt: jwt,
-	}, nil
-}
-
 //Login route...
 func (g *Gateway) Login(ctx context.Context, req *proto.LoginRequest) (*proto.JWT, error) {
 	request := &LoginRequest{
