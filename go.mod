@@ -15,9 +15,10 @@ require (
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/plutov/paypal v2.0.5+incompatible
 	github.com/stretchr/testify v1.7.0
-	go.buf.build/grpc/go/thenewlebowski/pisces v1.4.11
+	go.buf.build/grpc/go/thenewlebowski/pisces v1.4.12
 	go.uber.org/zap v1.19.0
 	google.golang.org/grpc v1.48.0
+	google.golang.org/protobuf v1.28.1
 	gopkg.in/hlandau/passlib.v1 v1.0.11
 	gorm.io/driver/mysql v1.3.5
 	gorm.io/gorm v1.23.8
@@ -50,7 +51,6 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.7 // indirect
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/hlandau/easymetric.v1 v1.0.0 // indirect
 	gopkg.in/hlandau/measurable.v1 v1.0.1 // indirect

@@ -9,6 +9,7 @@ import (
 	"github.com/cryptnode-software/pisces/lib/errors"
 	"github.com/google/uuid"
 	proto "go.buf.build/grpc/go/thenewlebowski/pisces/general/v1"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // NewGateway is the going to return a gateway i.e. "controller"
@@ -271,7 +272,7 @@ func (g *Gateway) StartUpload(ctx context.Context, req *proto.StartUploadRequest
 }
 
 //GeneratePaypalClientToken generates a returns a unique paypal client token in order to create
-func (g *Gateway) GeneratePaypalClientToken(ctx context.Context, req *proto.GeneratePaypalClientTokenRequest) (*proto.GeneratePaypalClientTokenResponse, error) {
+func (g *Gateway) GeneratePaypalClientToken(ctx context.Context, req *emptypb.Empty) (*proto.GeneratePaypalClientTokenResponse, error) {
 	token, err := g.services.PaypalService.GenerateClientToken(ctx)
 	if err != nil {
 		g.Env.Log.Error(err.Error())

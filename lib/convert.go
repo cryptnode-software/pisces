@@ -146,6 +146,7 @@ func convertCartToProto(cart []*Cart) (result []*proto.CartContents) {
 
 	for i, content := range cart {
 		pcontent := new(proto.CartContents)
+
 		pcontent.ProductId = content.ProductID.String()
 		pcontent.OrderId = content.OrderID.String()
 		pcontent.Quantity = content.Quantity
@@ -167,21 +168,22 @@ func convertPaymentMethodToProto(method PaymentMethod) (result proto.PaymentMeth
 
 	return
 }
-func convertPaymentMethod(method proto.PaymentMethod) PaymentMethod {
-
-	result := PaymentMethodNotImplemented
+func convertPaymentMethod(method proto.PaymentMethod) (result PaymentMethod) {
 
 	switch method {
 	case proto.PaymentMethod_PaymentMethodPaypal:
 		result = PaymentMethodPaypal
+	default:
+		result = PaymentMethodNotImplemented
 	}
 
-	return result
+	return
 }
 
 func convertOrderStatus(status proto.OrderStatus) (result OrderStatus) {
 
 	switch status {
+
 	case proto.OrderStatus_AdminPending:
 		result = OrderStatusAdminPending
 	case proto.OrderStatus_UserPending:
