@@ -11,4 +11,5 @@ const (
 type Attachment struct {
 	Type AttachmentType
 	URL  string
+	Model
 }

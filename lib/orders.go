@@ -80,12 +80,12 @@ const (
 
 //Inquiry the structure contact info of a customer
 type Inquiry struct {
+	Attachments []*Attachment `gorm:"many2many:inquiry_attachments"`
 	Description string
-	// Attachments []string
-	FirstName string
-	LastName  string
-	Number    string
-	Email     string
+	FirstName   string
+	LastName    string
+	Number      string
+	Email       string
 	Model
 }
 

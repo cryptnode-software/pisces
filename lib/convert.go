@@ -25,6 +25,7 @@ func convertInquiryToProto(info *Inquiry) *proto.Inquiry {
 		return nil
 	}
 	return &proto.Inquiry{
+		Attachments: convertAttachmentsToProto(info.Attachments),
 		Body:        info.Description,
 		Id:          info.ID.String(),
 		FirstName:   info.FirstName,
@@ -35,8 +36,13 @@ func convertInquiryToProto(info *Inquiry) *proto.Inquiry {
 }
 
 func convertInquiry(info *proto.Inquiry) (inquiry *Inquiry) {
+	if info == nil {
+		return nil
+	}
+
 	inquiry = new(Inquiry)
 
+	inquiry.Attachments = convertAttachments(info.Attachments)
 	inquiry.FirstName = info.FirstName
 	inquiry.Number = info.PhoneNumber
 	inquiry.LastName = info.LastName
