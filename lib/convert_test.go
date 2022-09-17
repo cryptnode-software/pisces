@@ -35,6 +35,7 @@ func TestConvertOrdersToProto(t *testing.T) {
 						Body:        "Quis incididunt aliqua ex duis proident sunt sit.",
 						Email:       "test.user@test.io",
 						PhoneNumber: "000-000-0000",
+						Attachments: []*proto.Attachment{},
 						Id:          id.String(),
 						LastName:    "user",
 						FirstName:   "test",
@@ -54,6 +55,7 @@ func TestConvertOrdersToProto(t *testing.T) {
 						Number:      "000-000-0000",
 						LastName:    "user",
 						FirstName:   "test",
+						Attachments: []*Attachment{},
 						Model: Model{
 							ID: id,
 						},
@@ -97,6 +99,7 @@ func TestConvertOrderToProto(t *testing.T) {
 				Inquiry: &Inquiry{
 					Description: "Quis incididunt aliqua ex duis proident sunt sit.",
 					Email:       "test.user@test.io",
+					Attachments: []*Attachment{},
 					Number:      "000-000-0000",
 					LastName:    "user",
 					FirstName:   "test",
@@ -116,6 +119,7 @@ func TestConvertOrderToProto(t *testing.T) {
 				Status:        proto.OrderStatus_UserPending,
 				Inquiry: &proto.Inquiry{
 					Body:        "Quis incididunt aliqua ex duis proident sunt sit.",
+					Attachments: []*proto.Attachment{},
 					Email:       "test.user@test.io",
 					PhoneNumber: "000-000-0000",
 					Id:          id.String(),
@@ -160,6 +164,7 @@ func TestConvertOrder(t *testing.T) {
 				Inquiry: &Inquiry{
 					Description: "Quis incididunt aliqua ex duis proident sunt sit.",
 					Email:       "test.user@test.io",
+					Attachments: []*Attachment{},
 					Number:      "000-000-0000",
 					LastName:    "user",
 					FirstName:   "test",
@@ -180,6 +185,7 @@ func TestConvertOrder(t *testing.T) {
 				Inquiry: &proto.Inquiry{
 					Body:        "Quis incididunt aliqua ex duis proident sunt sit.",
 					Email:       "test.user@test.io",
+					Attachments: []*proto.Attachment{},
 					PhoneNumber: "000-000-0000",
 					Id:          id.String(),
 					LastName:    "user",
@@ -223,6 +229,7 @@ func TestConvertInquiry(t *testing.T) {
 				Description: "Quis incididunt aliqua ex duis proident sunt sit.",
 				Email:       "test.user@test.io",
 				Number:      "000-000-0000",
+				Attachments: []*Attachment{},
 				LastName:    "user",
 				FirstName:   "test",
 				Model: Model{
@@ -232,6 +239,7 @@ func TestConvertInquiry(t *testing.T) {
 			inquiry: &proto.Inquiry{
 				Body:        "Quis incididunt aliqua ex duis proident sunt sit.",
 				Email:       "test.user@test.io",
+				Attachments: []*proto.Attachment{},
 				PhoneNumber: "000-000-0000",
 				Id:          id.String(),
 				LastName:    "user",
@@ -262,6 +270,7 @@ func TestConvertInquiryToProto(t *testing.T) {
 			inquiry: &Inquiry{
 				Description: "Quis incididunt aliqua ex duis proident sunt sit.",
 				Email:       "test.user@test.io",
+				Attachments: []*Attachment{},
 				Number:      "000-000-0000",
 				LastName:    "user",
 				FirstName:   "test",
@@ -272,6 +281,7 @@ func TestConvertInquiryToProto(t *testing.T) {
 			expected: &proto.Inquiry{
 				Body:        "Quis incididunt aliqua ex duis proident sunt sit.",
 				Email:       "test.user@test.io",
+				Attachments: []*proto.Attachment{},
 				PhoneNumber: "000-000-0000",
 				Id:          id.String(),
 				LastName:    "user",
