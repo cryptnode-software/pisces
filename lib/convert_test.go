@@ -286,3 +286,103 @@ func TestConvertInquiryToProto(t *testing.T) {
 		assert.Equal(t, table.expected, inquiry)
 	}
 }
+
+func TestConvertAttachment(t *testing.T) {
+	if err != nil {
+		t.Error(err)
+	}
+
+	url := "https://github.com/cryptnode-software/pisces"
+
+	tables := []struct {
+		attachment *proto.Attachment
+		expected   *Attachment
+	}{
+		{
+			attachment: &proto.Attachment{
+				Type: proto.AttachmentType_AttachmentTypeFile,
+				Url:  url,
+			},
+			expected: &Attachment{
+				Type: AttachmentTypeFile,
+				URL:  url,
+			},
+		},
+		{
+			attachment: &proto.Attachment{
+				Type: proto.AttachmentType_AttachmentTypeImage,
+				Url:  url,
+			},
+			expected: &Attachment{
+				Type: AttachmentTypeImage,
+				URL:  url,
+			},
+		},
+		{
+			attachment: &proto.Attachment{
+				Type: proto.AttachmentType_AttachmentTypeNotImplemented,
+				Url:  url,
+			},
+			expected: &Attachment{
+				Type: AttachmentTypeNotImplemented,
+				URL:  url,
+			},
+		},
+	}
+
+	for _, table := range tables {
+		attachment := convertAttachment(table.attachment)
+
+		assert.Equal(t, table.expected, attachment)
+	}
+}
+
+func TestConvertAttachmentToProto(t *testing.T) {
+	if err != nil {
+		t.Error(err)
+	}
+
+	url := "https://github.com/cryptnode-software/pisces"
+
+	tables := []struct {
+		expected   *proto.Attachment
+		attachment *Attachment
+	}{
+		{
+			expected: &proto.Attachment{
+				Type: proto.AttachmentType_AttachmentTypeFile,
+				Url:  url,
+			},
+			attachment: &Attachment{
+				Type: AttachmentTypeFile,
+				URL:  url,
+			},
+		},
+		{
+			expected: &proto.Attachment{
+				Type: proto.AttachmentType_AttachmentTypeImage,
+				Url:  url,
+			},
+			attachment: &Attachment{
+				Type: AttachmentTypeImage,
+				URL:  url,
+			},
+		},
+		{
+			expected: &proto.Attachment{
+				Type: proto.AttachmentType_AttachmentTypeNotImplemented,
+				Url:  url,
+			},
+			attachment: &Attachment{
+				Type: AttachmentTypeNotImplemented,
+				URL:  url,
+			},
+		},
+	}
+
+	for _, table := range tables {
+		attachment := convertAttachmentToProto(table.attachment)
+
+		assert.Equal(t, table.expected, attachment)
+	}
+}

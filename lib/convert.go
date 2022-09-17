@@ -50,6 +50,78 @@ func convertInquiry(info *proto.Inquiry) (inquiry *Inquiry) {
 	return
 }
 
+func convertAttachmentsToProto(attachments []*Attachment) (result []*proto.Attachment) {
+	result = make([]*proto.Attachment, len(attachments))
+
+	for i, attachment := range attachments {
+		result[i] = convertAttachmentToProto(attachment)
+	}
+
+	return
+}
+
+func convertAttachments(attachments []*proto.Attachment) (result []*Attachment) {
+	result = make([]*Attachment, len(attachments))
+
+	for i, attachment := range attachments {
+		result[i] = convertAttachment(attachment)
+	}
+
+	return
+}
+
+func convertAttachmentToProto(attachment *Attachment) (result *proto.Attachment) {
+	if attachment == nil {
+		return nil
+	}
+
+	result = new(proto.Attachment)
+
+	result.Type = convertAttachmentTypeToProto(attachment.Type)
+	result.Url = attachment.URL
+
+	return
+}
+
+func convertAttachment(attachment *proto.Attachment) (result *Attachment) {
+	if attachment == nil {
+		return nil
+	}
+
+	result = new(Attachment)
+
+	result.Type = convertAttachmentType(attachment.Type)
+	result.URL = attachment.Url
+
+	return
+}
+
+func convertAttachmentType(atype proto.AttachmentType) (result AttachmentType) {
+	result = AttachmentTypeNotImplemented
+
+	switch atype {
+	case proto.AttachmentType_AttachmentTypeFile:
+		result = AttachmentTypeFile
+	case proto.AttachmentType_AttachmentTypeImage:
+		result = AttachmentTypeImage
+	}
+
+	return
+}
+
+func convertAttachmentTypeToProto(atype AttachmentType) (result proto.AttachmentType) {
+	result = proto.AttachmentType_AttachmentTypeNotImplemented
+
+	switch atype {
+	case AttachmentTypeFile:
+		result = proto.AttachmentType_AttachmentTypeFile
+	case AttachmentTypeImage:
+		result = proto.AttachmentType_AttachmentTypeImage
+	}
+
+	return
+}
+
 func convertOrderToProto(order *Order) (result *proto.Order, err error) {
 	result = new(proto.Order)
 
