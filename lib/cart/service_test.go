@@ -1,6 +1,7 @@
 package cart_test
 
 import (
+	commons "github.com/cryptnode-software/commons/pkg"
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/cart"
 )
@@ -8,7 +9,7 @@ import (
 var (
 	service, err = cart.NewService(
 		lib.NewEnv(
-			lib.NewLogger(lib.EnvDev),
+			commons.NewLogger(commons.EnvDev),
 		),
 	)
 )

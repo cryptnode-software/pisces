@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	commons "github.com/cryptnode-software/commons/pkg"
 	pgorm "github.com/cryptnode-software/pisces/lib/gorm"
 	paylib "github.com/plutov/paypal"
 	"gorm.io/gorm"
@@ -25,42 +26,29 @@ const (
 	envS3Bucket    string = "S3_BUCKET"
 )
 
-type Environment string
-
-const (
-	// EnvDev for development environment
-	EnvDev Environment = "dev"
-
-	// EnvUAT for UAT environment
-	EnvUAT Environment = "uat"
-
-	// EnvProd for production environment
-	EnvProd Environment = "prod"
-)
-
 // Env ...
 type Env struct {
 	GormDB      *gorm.DB
-	Log         Logger
-	Environment Environment
+	Log         commons.Logger
+	Environment commons.Environment
 	PaypalEnv   *PaypalEnv
 	JWTEnv      *JWTEnv
 	AWSEnv      *AWSEnv
 }
 
-//PaypalEnv the structure for the paypal environment
+// PaypalEnv the structure for the paypal environment
 type PaypalEnv struct {
 	ClientID string
 	SecretID string
 	Host     string
 }
 
-//JWTEnv the structure that is required for JWT configuration
+// JWTEnv the structure that is required for JWT configuration
 type JWTEnv struct {
 	Secret string
 }
 
-//UploadType the primitive type that all of upload configurations support
+// UploadType the primitive type that all of upload configurations support
 type UploadType string
 
 const (
@@ -78,7 +66,7 @@ type AWSEnv struct {
 	Endpoint  *string
 }
 
-func NewEnv(logger Logger) (result *Env) {
+func NewEnv(logger commons.Logger) (result *Env) {
 	environ := os.Getenv(env)
 	var err error
 
@@ -88,7 +76,7 @@ func NewEnv(logger Logger) (result *Env) {
 	}
 
 	result = &Env{
-		Environment: Environment(environ),
+		Environment: commons.Environment(environ),
 		Log:         logger,
 	}
 
@@ -112,7 +100,7 @@ func NewEnv(logger Logger) (result *Env) {
 	return
 }
 
-func NewPaypalEnv(env Environment, client, secret string) (result *PaypalEnv) {
+func NewPaypalEnv(env commons.Environment, client, secret string) (result *PaypalEnv) {
 
 	if client == "" {
 		log.Fatalf("paypal client id not provided please provide %s env variable", envPaypalClientID)
@@ -130,7 +118,7 @@ func NewPaypalEnv(env Environment, client, secret string) (result *PaypalEnv) {
 	}
 
 	switch env {
-	case EnvProd:
+	case commons.EnvProd:
 		result.Host = paylib.APIBaseLive
 	default:
 		result.Host = paylib.APIBaseSandBox

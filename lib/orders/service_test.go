@@ -6,13 +6,14 @@ import (
 	"testing"
 	"time"
 
+	commons "github.com/cryptnode-software/commons/pkg"
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/orders"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	service, err = orders.NewService(lib.NewEnv(lib.NewLogger(lib.EnvDev)))
+	service, err = orders.NewService(lib.NewEnv(commons.NewLogger(commons.EnvDev)))
 
 	inquiry = &lib.Inquiry{
 		Description: "some test description",

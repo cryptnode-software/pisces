@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	commons "github.com/cryptnode-software/commons/pkg"
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/auth"
 	"github.com/stretchr/testify/assert"
@@ -25,7 +26,7 @@ var (
 	}
 )
 
-var env = lib.NewEnv(lib.NewLogger(lib.EnvDev))
+var env = lib.NewEnv(commons.NewLogger(commons.EnvDev))
 var service, err = auth.NewService(env)
 
 func TestGenerateAndDecodeJWT(t *testing.T) {
@@ -55,7 +56,7 @@ func TestGenerateAndDecodeJWT(t *testing.T) {
 	assert.Equal(t, testuser, u)
 }
 
-//TestLoginUser tests against the testuser defined above
+// TestLoginUser tests against the testuser defined above
 func TestLoginUser(t *testing.T) {
 
 	tables := []struct {

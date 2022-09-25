@@ -5,13 +5,14 @@ import (
 	"errors"
 	"testing"
 
+	commons "github.com/cryptnode-software/commons/pkg"
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/product"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	env = lib.NewEnv(lib.NewLogger(lib.EnvDev))
+	env = lib.NewEnv(commons.NewLogger(commons.EnvDev))
 
 	service, err = product.NewService(env)
 

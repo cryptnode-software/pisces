@@ -5,6 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	commons "github.com/cryptnode-software/commons/pkg"
+
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/services"
 	v1 "go.buf.build/grpc/go/thenewlebowski/pisces/general/v1"
@@ -12,7 +14,7 @@ import (
 
 var (
 	gateway, err = lib.NewGateway(env, services.New(env))
-	env          = lib.NewEnv(lib.NewLogger(lib.EnvDev))
+	env          = lib.NewEnv(commons.NewLogger(commons.EnvDev))
 )
 
 func TestGetSignedURL(t *testing.T) {

@@ -4,13 +4,14 @@ import (
 	"context"
 	"testing"
 
+	commons "github.com/cryptnode-software/commons/pkg"
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/paypal"
 	"github.com/google/uuid"
 )
 
 var (
-	env = lib.NewEnv(lib.NewLogger(lib.EnvDev))
+	env = lib.NewEnv(commons.NewLogger(commons.EnvDev))
 
 	service, err = paypal.NewService(env)
 

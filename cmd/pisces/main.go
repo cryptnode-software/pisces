@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	commons "github.com/cryptnode-software/commons/pkg"
 	pisces "github.com/cryptnode-software/pisces/lib"
 	"github.com/cryptnode-software/pisces/lib/services"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -70,13 +71,13 @@ func main() {
 
 	flag.Parse()
 
-	environ := pisces.Environment(os.Getenv(env))
+	environ := commons.Environment(os.Getenv(env))
 	if environ == "" {
 		log.Fatalf("environment is not provided: please provide %s variable", env)
 		return
 	}
 
-	environment := pisces.NewEnv(pisces.NewLogger(environ))
+	environment := pisces.NewEnv(commons.NewLogger(environ))
 
 	gw, err := pisces.NewGateway(environment, services.New(environment))
 	if err != nil {
