@@ -19,7 +19,7 @@ var (
 
 	order = &lib.Order{
 		Total: 40.00,
-		Model: lib.Model{
+		Model: commons.Model{
 			ID: id,
 		},
 	}

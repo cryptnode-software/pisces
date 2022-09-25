@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	commons "github.com/cryptnode-software/commons/pkg"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -56,12 +57,12 @@ func TestConvertOrdersToProto(t *testing.T) {
 						LastName:    "user",
 						FirstName:   "test",
 						Attachments: []*Attachment{},
-						Model: Model{
+						Model: commons.Model{
 							ID: id,
 						},
 					},
 					Status: OrderStatusUserPending,
-					Model: Model{
+					Model: commons.Model{
 						ID: id,
 					},
 					Due:   due,
@@ -103,12 +104,12 @@ func TestConvertOrderToProto(t *testing.T) {
 					Number:      "000-000-0000",
 					LastName:    "user",
 					FirstName:   "test",
-					Model: Model{
+					Model: commons.Model{
 						ID: id,
 					},
 				},
 				Status: OrderStatusUserPending,
-				Model: Model{
+				Model: commons.Model{
 					ID: id,
 				},
 				Due:   due,
@@ -168,12 +169,12 @@ func TestConvertOrder(t *testing.T) {
 					Number:      "000-000-0000",
 					LastName:    "user",
 					FirstName:   "test",
-					Model: Model{
+					Model: commons.Model{
 						ID: id,
 					},
 				},
 				Status: OrderStatusUserPending,
-				Model: Model{
+				Model: commons.Model{
 					ID: id,
 				},
 				Due:   due,
@@ -232,7 +233,7 @@ func TestConvertInquiry(t *testing.T) {
 				Attachments: []*Attachment{},
 				LastName:    "user",
 				FirstName:   "test",
-				Model: Model{
+				Model: commons.Model{
 					ID: id,
 				},
 			},
@@ -274,7 +275,7 @@ func TestConvertInquiryToProto(t *testing.T) {
 				Number:      "000-000-0000",
 				LastName:    "user",
 				FirstName:   "test",
-				Model: Model{
+				Model: commons.Model{
 					ID: id,
 				},
 			},

@@ -3,19 +3,20 @@ package lib
 import (
 	"context"
 
+	commons "github.com/cryptnode-software/commons/pkg"
 	"github.com/google/uuid"
 )
 
-//CartService represents the structure that the cart service should be
-//when we implement it in its functional form. i.e. lib/cart/service.go
+// CartService represents the structure that the cart service should be
+// when we implement it in its functional form. i.e. lib/cart/service.go
 type CartService interface {
 	SaveProduct(ctx context.Context, order *Order, product *Product, action CartAction, quantity int) error
 	SaveCart(ctx context.Context, cart []*Cart) ([]*Cart, error)
 	GetCart(context.Context, *Order) ([]*Cart, error)
 }
 
-//CartAction represents the primitive type for all of the CartActions.
-//This is used for add or removing a product from the provided order
+// CartAction represents the primitive type for all of the CartActions.
+// This is used for add or removing a product from the provided order
 type CartAction string
 
 const (
@@ -32,5 +33,5 @@ type Cart struct {
 	Product   *Product `gorm:"references:ID;"`
 	OrderID   uuid.UUID
 	Quantity  int64
-	Model
+	commons.Model
 }

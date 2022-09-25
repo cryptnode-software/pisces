@@ -22,15 +22,15 @@ var (
 	}
 )
 
-//Service the auth structure handles anything that may be auth related
+// Service the auth structure handles anything that may be auth related
 //
-//Login handles the functionality to properly check and login a user
+// Login handles the functionality to properly check and login a user
 type Service struct {
 	*lib.Env
 	repo RepoI
 }
 
-//NewService creates a new paypal service that satisfies the PaypalService interface
+// NewService creates a new paypal service that satisfies the PaypalService interface
 func NewService(env *lib.Env) (lib.AuthService, error) {
 	return &Service{
 		env,
@@ -40,18 +40,18 @@ func NewService(env *lib.Env) (lib.AuthService, error) {
 	}, nil
 }
 
-//Login accepts a login response with a valid username and password if they match then the jwt
-//is hashed and returned in order to properly user the application
+// Login accepts a login response with a valid username and password if they match then the jwt
+// is hashed and returned in order to properly user the application
 func (s *Service) Login(ctx context.Context, req *lib.LoginRequest) (*lib.User, error) {
 	return s.repo.Login(ctx, req)
 }
 
-//CreateUser creates a user in the
+// CreateUser creates a user in the
 func (s *Service) CreateUser(ctx context.Context, user *lib.User, password string) (*lib.User, error) {
 	return s.repo.CreateUser(ctx, user, password)
 }
 
-//GenerateJWT creates a jwt and signs it with the secret that is collected from the JWTSecret env property
+// GenerateJWT creates a jwt and signs it with the secret that is collected from the JWTSecret env property
 func (s *Service) GenerateJWT(ctx context.Context, user *lib.User) (string, error) {
 	claims := struct {
 		User *lib.User `json:"user"`
@@ -68,7 +68,7 @@ func (s *Service) GenerateJWT(ctx context.Context, user *lib.User) (string, erro
 	return token.SignedString([]byte(s.Env.JWTEnv.Secret))
 }
 
-//DecodeJWT decodes a jwt
+// DecodeJWT decodes a jwt
 func (s *Service) DecodeJWT(ctx context.Context, token string) (*lib.User, error) {
 	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
@@ -96,12 +96,10 @@ func (s *Service) DecodeJWT(ctx context.Context, token string) (*lib.User, error
 				return nil, err
 			}
 
-			result.ID = uuid
-
 			result.Username = u["username"].(string)
 			result.Email = u["email"].(string)
 			result.Admin = u["admin"].(bool)
-
+			result.ID = uuid
 		}
 
 	} else {
@@ -120,8 +118,8 @@ func (s *Service) DeleteUser(ctx context.Context, user *lib.User, conditions *li
 	return s.repo.SoftDelete(ctx, user)
 }
 
-//AuthenticateToken makes sure a token is valid and isn't expired otherwise it
-//will raise an exception.
+// AuthenticateToken makes sure a token is valid and isn't expired otherwise it
+// will raise an exception.
 func (s *Service) AuthenticateToken(ctx context.Context) (*lib.User, error) {
 	token, err := lib.GetAuthFromContext(ctx)
 	if err != nil {
@@ -131,9 +129,9 @@ func (s *Service) AuthenticateToken(ctx context.Context) (*lib.User, error) {
 	return s.DecodeJWT(ctx, token)
 }
 
-//AuthenticateAdmin authenticates a request that is only to be used by admin personal
-//doesn't only user the jwt token but double checks with the database information befor
-//approval
+// AuthenticateAdmin authenticates a request that is only to be used by admin personal
+// doesn't only user the jwt token but double checks with the database information befor
+// approval
 func (s *Service) AuthenticateAdmin(ctx context.Context) (*lib.User, error) {
 	user, err := s.AuthenticateToken(ctx)
 

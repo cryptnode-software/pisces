@@ -8,11 +8,11 @@ go 1.18
 require (
 	github.com/aws/aws-sdk-go-v2 v1.16.11
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.27.5
-	github.com/cryptnode-software/commons v0.0.0-20220925001958-6c78062b33ae
+	github.com/cryptnode-software/commons v0.0.0-20220925045416-b3e6361f83e0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/golang/protobuf v1.5.2
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/plutov/paypal v2.0.5+incompatible
@@ -22,7 +22,7 @@ require (
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/hlandau/passlib.v1 v1.0.11
 	gorm.io/driver/mysql v1.3.5
-	gorm.io/gorm v1.23.8
+	gorm.io/gorm v1.23.10
 )
 
 require (

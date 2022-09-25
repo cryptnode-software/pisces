@@ -1,5 +1,7 @@
 package lib
 
+import commons "github.com/cryptnode-software/commons/pkg"
+
 type AttachmentType string
 
 const (
@@ -11,5 +13,5 @@ const (
 type Attachment struct {
 	Type AttachmentType
 	URL  string
-	Model
+	commons.Model
 }

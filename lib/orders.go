@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
+	commons "github.com/cryptnode-software/commons/pkg"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-//OrderService represents the OrderService interface
+// OrderService represents the OrderService interface
 type OrderService interface {
 	GetInquires(ctx context.Context, conditions *GetInquiryConditions) ([]*Inquiry, error)
 	SaveOrder(context.Context, *Order, *SaveConditions) (*Order, error)
@@ -21,14 +22,14 @@ type OrderService interface {
 	ArchiveOrder(context.Context, *Order) (*Order, error)
 }
 
-//OrderConditions defines the different conditions that
-//we can filter and sort orders by.
+// OrderConditions defines the different conditions that
+// we can filter and sort orders by.
 type OrderConditions struct {
 	Status OrderStatus
 	SortBy OrdersSortBy
 }
 
-//OrdersSortBy represents the primitive type for all the sorting capabilities
+// OrdersSortBy represents the primitive type for all the sorting capabilities
 type OrdersSortBy string
 
 const (
@@ -47,7 +48,7 @@ const (
 
 type OrderID string
 
-//Order the general structure of an order
+// Order the general structure of an order
 type Order struct {
 	Inquiry       *Inquiry `gorm:"references:ID"`
 	Total         float32  `gorm:"-"`
@@ -57,7 +58,7 @@ type Order struct {
 	Due           time.Time
 	Cart          []*Cart
 	ExtID         string
-	Model
+	commons.Model
 }
 
 func (order *Order) AfterDelete(tx *gorm.DB) (err error) {
@@ -65,8 +66,8 @@ func (order *Order) AfterDelete(tx *gorm.DB) (err error) {
 	return
 }
 
-//PaymentMethod the primitive data type for all of
-//our payment methods.
+// PaymentMethod the primitive data type for all of
+// our payment methods.
 type PaymentMethod string
 
 const (
@@ -78,7 +79,7 @@ const (
 	PaymentMethodPaypal PaymentMethod = "PAYPAL"
 )
 
-//Inquiry the structure contact info of a customer
+// Inquiry the structure contact info of a customer
 type Inquiry struct {
 	Attachments []*Attachment `gorm:"many2many:inquiry_attachments"`
 	Description string
@@ -86,11 +87,11 @@ type Inquiry struct {
 	LastName    string
 	Number      string
 	Email       string
-	Model
+	commons.Model
 }
 
-//OrderStatus this is the primitive datatype for OrderStatus' for
-//how we handle it through the rest of the application
+// OrderStatus this is the primitive datatype for OrderStatus' for
+// how we handle it through the rest of the application
 type OrderStatus string
 
 const (
@@ -113,8 +114,8 @@ const (
 	OrderStatusAccepted OrderStatus = "ACCEPTED"
 )
 
-//GetInquiryConditions represents the different conditions that we
-//can define when using the
+// GetInquiryConditions represents the different conditions that we
+// can define when using the
 type GetInquiryConditions struct {
 	//InquiryID returns a single inquiry that matches the id
 	InquiryID int64

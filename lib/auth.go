@@ -3,6 +3,7 @@ package lib
 import (
 	"context"
 
+	commons "github.com/cryptnode-software/commons/pkg"
 	"github.com/cryptnode-software/pisces/lib/errors"
 	"google.golang.org/grpc/metadata"
 )
@@ -18,8 +19,8 @@ var (
 	}
 )
 
-//AuthService represents our internal auth service mostly used for authenticating customers and
-//our admin employees
+// AuthService represents our internal auth service mostly used for authenticating customers and
+// our admin employees
 type AuthService interface {
 	DeleteUser(ctx context.Context, user *User, conditions *DeleteConditions) error
 	CreateUser(ctx context.Context, user *User, password string) (*User, error)
@@ -30,34 +31,34 @@ type AuthService interface {
 	Login(context.Context, *LoginRequest) (*User, error)
 }
 
-//LoginRequest holds the values that are required to properly login
+// LoginRequest holds the values that are required to properly login
 type LoginRequest struct {
 	Username string
 	Email    string
 	Password string
 }
 
-//User the general public structure of a user through out the ecosystem
+// User the general public structure of a user through out the ecosystem
 type User struct {
 	Username string `json:"username" gorm:"not null"`
 	Admin    bool   `json:"admin" gorm:"not null"`
 	Email    string `json:"email" gorm:"not null"`
-	Model
+	commons.Model
 }
 
-//Auth ...
+// Auth ...
 type Auth struct{}
 
-//CreateUserResponse ...
+// CreateUserResponse ...
 type CreateUserResponse struct {
 }
 
-//CreateUserRequest ...
+// CreateUserRequest ...
 type CreateUserRequest struct {
 }
 
-//GetAuthFromContext gets the authentication token can be omitted by specifing the route that
-//doesn't require authentication during gateway intialization
+// GetAuthFromContext gets the authentication token can be omitted by specifing the route that
+// doesn't require authentication during gateway intialization
 func GetAuthFromContext(ctx context.Context) (string, error) {
 	metadata, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
