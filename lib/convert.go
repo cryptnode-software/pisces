@@ -300,3 +300,50 @@ func convertInquiresToProto(inquires []*Inquiry) []*proto.Inquiry {
 
 	return result
 }
+
+func convertProductsToProto(products []*Product) (result []*proto.Product) {
+	result = make([]*proto.Product, len(products))
+
+	for i, product := range products {
+		result[i] = convertProductToProto(product)
+	}
+
+	return
+}
+
+func convertProductToProto(product *Product) (result *proto.Product) {
+	result = new(proto.Product)
+
+	result.Inventory = int64(product.Inventory)
+	result.Description = product.Description
+	result.Id = product.ID.String()
+	result.Cost = product.Cost
+	result.Name = product.Name
+
+	return
+}
+
+func convertProductsFromProto(products []*proto.Product) (result []*Product) {
+	result = make([]*Product, len(products))
+
+	for i, product := range products {
+		result[i] = convertProductFromProto(product)
+	}
+
+	return
+}
+
+func convertProductFromProto(product *proto.Product) (result *Product) {
+	result = new(Product)
+
+	if id, err := uuid.Parse(product.Id); err == nil {
+		result.ID = id
+	}
+
+	result.Inventory = int(product.Inventory)
+	result.Description = product.Description
+	result.Cost = product.Cost
+	result.Name = product.Name
+
+	return
+}

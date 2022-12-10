@@ -2,6 +2,7 @@ package product
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cryptnode-software/pisces/lib"
 	"github.com/google/uuid"
@@ -52,6 +53,10 @@ func (s *Service) GetProduct(ctx context.Context, id uuid.UUID, conditions *lib.
 	return s.repo.GetProduct(ctx, id)
 }
 
+func (s *Service) GetProducts(ctx context.Context, opts ...lib.WithGetProductsOptions) ([]*lib.Product, error) {
+	return s.repo.GetProducts(ctx, opts...)
+}
+
 func (s *Service) SaveProduct(ctx context.Context, product *lib.Product) (result *lib.Product, err error) {
 	return s.repo.SaveProduct(ctx, product)
 }
@@ -66,6 +71,7 @@ func (s *Service) DeleteProduct(ctx context.Context, product *lib.Product, condi
 }
 
 type repoi interface {
+	GetProducts(ctx context.Context, opts ...lib.WithGetProductsOptions) (products []*lib.Product, err error)
 	SaveProduct(ctx context.Context, product *lib.Product) (*lib.Product, error)
 	GetArchivedProduct(ctx context.Context, id uuid.UUID) (*lib.Product, error)
 	GetProduct(ctx context.Context, id uuid.UUID) (*lib.Product, error)
@@ -79,7 +85,25 @@ type repo struct {
 
 func (r *repo) GetProduct(ctx context.Context, id uuid.UUID) (product *lib.Product, err error) {
 	product = new(lib.Product)
-	r.DB.Model(new(lib.Product)).First(product, "id = ?", id)
+	err = r.DB.Model(new(lib.Product)).First(product, "id = ?", id).Error
+	return
+}
+
+func (r *repo) GetProducts(ctx context.Context, opts ...lib.WithGetProductsOptions) (products []*lib.Product, err error) {
+	options := new(lib.GetProductsOption)
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	products = make([]*lib.Product, 0)
+
+	if options.Sort != nil {
+		err = r.DB.Order(fmt.Sprintf("%s %s", options.Sort.Field, options.Sort.Direction)).Find(&products).Error
+		return
+	}
+
+	err = r.DB.Find(&products).Error
+
 	return
 }
 

@@ -152,6 +152,11 @@ func TestSaveProduct(t *testing.T) {
 		return
 	}
 
+	if err := seed(products); err != nil {
+		t.Error(err)
+		return
+	}
+
 	tables := []struct {
 		product *lib.Product
 	}{
@@ -180,6 +185,38 @@ func TestSaveProduct(t *testing.T) {
 
 	}
 
+}
+
+func TestGetProducts(t *testing.T) {
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := seed(products); err != nil {
+		t.Error(err)
+		return
+	}
+
+	tables := []struct {
+		opts []lib.WithGetProductsOptions
+	}{}
+
+	for range tables {
+		ps, err := service.GetProducts(ctx)
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		assert.Equal(t, products, ps)
+	}
+
+	if err = deseed(products); err != nil {
+		t.Error(err)
+		return
+	}
 }
 
 func seed(products []*lib.Product) error {

@@ -7,10 +7,39 @@ import (
 	"github.com/google/uuid"
 )
 
+type GetProductsOption struct {
+	Sort *SortBy
+}
+
+type SortBy struct {
+	Direction SortDirection
+	Field     string
+}
+
+type SortDirection string
+
+const (
+	Descending SortDirection = "DESC"
+	Ascending  SortDirection = "ASC"
+)
+
+type WithGetProductsOptions func(o *GetProductsOption) error
+
+func WithProductSort(field string, direction SortDirection) WithGetProductsOptions {
+	return func(o *GetProductsOption) error {
+		o.Sort = &SortBy{
+			Direction: direction,
+			Field:     field,
+		}
+		return nil
+	}
+}
+
 // ProductService ...
 type ProductService interface {
-	DeleteProduct(ctx context.Context, product *Product, conditions *DeleteConditions) error
 	GetProduct(ctx context.Context, id uuid.UUID, conditions *GetProductCondtions) (*Product, error)
+	DeleteProduct(ctx context.Context, product *Product, conditions *DeleteConditions) error
+	GetProducts(ctx context.Context, opts ...WithGetProductsOptions) ([]*Product, error)
 	SaveProduct(ctx context.Context, product *Product) (*Product, error)
 }
 

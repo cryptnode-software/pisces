@@ -242,6 +242,29 @@ func (g *Gateway) GetInquires(ctx context.Context, req *proto.GetInquiresRequest
 	}, nil
 }
 
+func (g *Gateway) GetProducts(ctx context.Context, req *proto.GetProductsRequest) (res *proto.GetProductsResponse, err error) {
+	res = new(proto.GetProductsResponse)
+
+	if id, err := uuid.Parse(req.Id); err == nil {
+		product, err := g.services.ProductService.GetProduct(ctx, id, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		return &proto.GetProductsResponse{
+			Product: convertProductToProto(product),
+		}, nil
+	}
+
+	products, err := g.services.ProductService.GetProducts(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res.Products = convertProductsToProto(products)
+	return
+}
+
 func (g *Gateway) StartUpload(ctx context.Context, req *proto.StartUploadRequest) (res *proto.StartUploadResponse, err error) {
 
 	res = new(proto.StartUploadResponse)
