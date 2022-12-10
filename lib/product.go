@@ -19,6 +19,7 @@ type Product struct {
 	Cost        float32
 	Description string
 	Name        string
+	Inventory   int
 	commons.Model
 }
 

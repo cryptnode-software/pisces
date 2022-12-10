@@ -23,16 +23,19 @@ var (
 			Description: "Test One Product Description",
 			Name:        "Test One Product",
 			Cost:        0.00,
+			Inventory:   1,
 		},
 		{
 			Description: "Test Two Product Description",
 			Name:        "Test Two Product",
 			Cost:        0.00,
+			Inventory:   500,
 		},
 		{
 			Description: "Test Three Product Description",
 			Name:        "Test Three Product",
 			Cost:        0.00,
+			Inventory:   1000,
 		},
 	}
 )
