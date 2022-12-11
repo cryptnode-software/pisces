@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/cryptnode-software/pisces/lib"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -46,11 +45,8 @@ type Service struct {
 //
 //conditions [github.com/cryptnode-software/pisces/lib.GetProductCondtions] optional
 
-func (s *Service) GetProduct(ctx context.Context, id uuid.UUID, conditions *lib.GetProductCondtions) (*lib.Product, error) {
-	if conditions != nil && conditions.Archived {
-		return s.repo.GetArchivedProduct(ctx, id)
-	}
-	return s.repo.GetProduct(ctx, id)
+func (s *Service) GetProduct(ctx context.Context, opts ...lib.WithGetProductsOptions) (*lib.Product, error) {
+	return s.repo.GetProduct(ctx, opts...)
 }
 
 func (s *Service) GetProducts(ctx context.Context, opts ...lib.WithGetProductsOptions) ([]*lib.Product, error) {
@@ -73,8 +69,7 @@ func (s *Service) DeleteProduct(ctx context.Context, product *lib.Product, condi
 type repoi interface {
 	GetProducts(ctx context.Context, opts ...lib.WithGetProductsOptions) (products []*lib.Product, err error)
 	SaveProduct(ctx context.Context, product *lib.Product) (*lib.Product, error)
-	GetArchivedProduct(ctx context.Context, id uuid.UUID) (*lib.Product, error)
-	GetProduct(ctx context.Context, id uuid.UUID) (*lib.Product, error)
+	GetProduct(ctx context.Context, opts ...lib.WithGetProductsOptions) (*lib.Product, error)
 	HardDelete(ctx context.Context, product *lib.Product) error
 	SoftDelete(ctx context.Context, product *lib.Product) error
 }
@@ -83,9 +78,46 @@ type repo struct {
 	*gorm.DB
 }
 
-func (r *repo) GetProduct(ctx context.Context, id uuid.UUID) (product *lib.Product, err error) {
+func (r *repo) GetProduct(ctx context.Context, opts ...lib.WithGetProductsOptions) (product *lib.Product, err error) {
 	product = new(lib.Product)
-	err = r.DB.Model(new(lib.Product)).First(product, "id = ?", id).Error
+
+	options := new(lib.GetProductsOption)
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	if options.ID != nil {
+		tx := r.DB
+
+		if options.Archived {
+			tx = tx.Unscoped()
+		}
+
+		err = tx.First(product, "id = ?", options.ID).Error
+
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+
+		return
+	}
+
+	if options.Name != nil {
+		tx := r.DB
+
+		if options.Archived {
+			tx = tx.Unscoped()
+		}
+
+		err = tx.First(product, "name = ?", options.Name).Error
+
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+
+		return
+	}
+
 	return
 }
 
@@ -118,10 +150,4 @@ func (r *repo) HardDelete(ctx context.Context, product *lib.Product) error {
 
 func (r *repo) SoftDelete(ctx context.Context, product *lib.Product) error {
 	return r.DB.Delete(product).Error
-}
-
-func (r *repo) GetArchivedProduct(ctx context.Context, id uuid.UUID) (product *lib.Product, err error) {
-	product = new(lib.Product)
-	err = r.DB.Unscoped().Where("id = ?", id).Find(product).Error
-	return product, err
 }

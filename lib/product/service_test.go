@@ -55,7 +55,9 @@ func TestGetProduct(t *testing.T) {
 	}
 
 	for _, p := range products {
-		product, err := service.GetProduct(ctx, p.ID, nil)
+		product, err := service.GetProduct(ctx,
+			lib.WithProductID(p.ID),
+		)
 
 		if err != nil {
 			t.Error(err)
@@ -82,16 +84,23 @@ func TestGetProductFailure(t *testing.T) {
 
 	products := products
 
+	if err = deseed(products); err != nil {
+		t.Error(err)
+		return
+	}
+
 	for _, p := range products {
 
-		product, err := service.GetProduct(ctx, p.ID, nil)
+		product, err := service.GetProduct(ctx,
+			lib.WithProductID(p.ID),
+		)
 
 		if err != nil {
 			t.Error(err)
 			return
 		}
 
-		if product == nil {
+		if product != nil {
 			t.Error("product was successfully found when it should have failed")
 			return
 		}
@@ -123,9 +132,10 @@ func TestSoftDeleteProduct(t *testing.T) {
 			return
 		}
 
-		product, err := service.GetProduct(ctx, p.ID, &lib.GetProductCondtions{
-			Archived: true,
-		})
+		product, err := service.GetProduct(ctx,
+			lib.WithProductID(p.ID),
+			lib.WithProductArchive(),
+		)
 
 		if product.ID != p.ID {
 			t.Error(errors.New("product returned with a different id when trying to fetching an archived product"))
@@ -192,6 +202,8 @@ func TestGetProducts(t *testing.T) {
 		t.Error(err)
 		return
 	}
+
+	products := products
 
 	if err := seed(products); err != nil {
 		t.Error(err)

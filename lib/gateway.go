@@ -246,7 +246,10 @@ func (g *Gateway) GetProducts(ctx context.Context, req *proto.GetProductsRequest
 	res = new(proto.GetProductsResponse)
 
 	if id, err := uuid.Parse(req.Id); err == nil {
-		product, err := g.services.ProductService.GetProduct(ctx, id, nil)
+		product, err := g.services.ProductService.GetProduct(ctx,
+			WithProductID(id),
+		)
+
 		if err != nil {
 			return nil, err
 		}
@@ -256,7 +259,24 @@ func (g *Gateway) GetProducts(ctx context.Context, req *proto.GetProductsRequest
 		}, nil
 	}
 
-	products, err := g.services.ProductService.GetProducts(ctx)
+	if name := req.Name; name != "" {
+		product, err := g.services.ProductService.GetProduct(ctx,
+			WithProductName(name),
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &proto.GetProductsResponse{
+			Product: convertProductToProto(product),
+		}, nil
+	}
+
+	products, err := g.services.ProductService.GetProducts(ctx,
+		WithProductSort(req.SortBy.FieldName, convertSortByDirection(req.SortBy.Direction)),
+	)
+
 	if err != nil {
 		return nil, err
 	}

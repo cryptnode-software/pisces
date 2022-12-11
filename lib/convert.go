@@ -312,6 +312,10 @@ func convertProductsToProto(products []*Product) (result []*proto.Product) {
 }
 
 func convertProductToProto(product *Product) (result *proto.Product) {
+	if product == nil {
+		return nil
+	}
+
 	result = new(proto.Product)
 
 	result.Inventory = int64(product.Inventory)
@@ -334,6 +338,10 @@ func convertProductsFromProto(products []*proto.Product) (result []*Product) {
 }
 
 func convertProductFromProto(product *proto.Product) (result *Product) {
+	if product == nil {
+		return nil
+	}
+
 	result = new(Product)
 
 	if id, err := uuid.Parse(product.Id); err == nil {
@@ -344,6 +352,18 @@ func convertProductFromProto(product *proto.Product) (result *Product) {
 	result.Description = product.Description
 	result.Cost = product.Cost
 	result.Name = product.Name
+
+	return
+}
+
+func convertSortByDirection(direction proto.SortDirection) (result SortDirection) {
+
+	switch direction {
+	case proto.SortDirection_ASC:
+		result = Ascending
+	case proto.SortDirection_DSC:
+		result = Descending
+	}
 
 	return
 }
