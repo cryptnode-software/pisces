@@ -243,7 +243,6 @@ func (g *Gateway) GetInquires(ctx context.Context, req *proto.GetInquiresRequest
 }
 
 func (g *Gateway) GetProducts(ctx context.Context, req *proto.GetProductsRequest) (res *proto.GetProductsResponse, err error) {
-	res = new(proto.GetProductsResponse)
 
 	if id, err := uuid.Parse(req.Id); err == nil {
 		product, err := g.services.ProductService.GetProduct(ctx,
@@ -273,15 +272,49 @@ func (g *Gateway) GetProducts(ctx context.Context, req *proto.GetProductsRequest
 		}, nil
 	}
 
-	products, err := g.services.ProductService.GetProducts(ctx,
-		WithProductSort(req.SortBy.FieldName, convertSortByDirection(req.SortBy.Direction)),
-	)
+	if req.SortBy != nil {
+		products, err := g.services.ProductService.GetProducts(ctx,
+			WithProductSort(
+				req.SortBy.FieldName,
+				convertSortByDirection(
+					req.SortBy.Direction,
+				),
+			),
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &proto.GetProductsResponse{
+			Products: convertProductsToProto(products),
+		}, nil
+	}
+
+	products, err := g.services.ProductService.GetProducts(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
+	res = new(proto.GetProductsResponse)
+
 	res.Products = convertProductsToProto(products)
+
+	return
+}
+
+func (g *Gateway) SaveProduct(ctx context.Context, req *proto.SaveProductRequest) (res *proto.SaveProductResponse, err error) {
+
+	product, err := g.services.ProductService.SaveProduct(
+		ctx,
+		convertProductFromProto(req.Product),
+	)
+
+	res = new(proto.SaveProductResponse)
+
+	res.Product = convertProductToProto(product)
+
 	return
 }
 

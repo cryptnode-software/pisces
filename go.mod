@@ -17,7 +17,7 @@ require (
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/plutov/paypal v2.0.5+incompatible
 	github.com/stretchr/testify v1.8.0
-	go.buf.build/grpc/go/thenewlebowski/pisces v1.4.15
+	go.buf.build/grpc/go/thenewlebowski/pisces v1.4.16
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/hlandau/passlib.v1 v1.0.11

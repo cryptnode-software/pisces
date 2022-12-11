@@ -62,6 +62,7 @@ var (
 
 	admin = map[string]bool{
 		"/pisces.Pisces/GetInquires": true,
+		"/pisces.Pisces/SaveProduct": true,
 	}
 )
 
