@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cryptnode-software/pisces/lib"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -54,7 +55,10 @@ func (s *Service) GetProducts(ctx context.Context, opts ...lib.WithGetProductsOp
 }
 
 func (s *Service) SaveProduct(ctx context.Context, product *lib.Product) (result *lib.Product, err error) {
-	return s.repo.SaveProduct(ctx, product)
+	if product.ID == uuid.Nil {
+		return s.repo.CreateProduct(ctx, product)
+	}
+	return s.repo.UpdateProduct(ctx, product)
 }
 
 func (s *Service) DeleteProduct(ctx context.Context, product *lib.Product, conditions *lib.DeleteConditions) error {
@@ -68,7 +72,8 @@ func (s *Service) DeleteProduct(ctx context.Context, product *lib.Product, condi
 
 type repoi interface {
 	GetProducts(ctx context.Context, opts ...lib.WithGetProductsOptions) (products []*lib.Product, err error)
-	SaveProduct(ctx context.Context, product *lib.Product) (*lib.Product, error)
+	UpdateProduct(ctx context.Context, product *lib.Product) (*lib.Product, error)
+	CreateProduct(ctx context.Context, product *lib.Product) (*lib.Product, error)
 	GetProduct(ctx context.Context, opts ...lib.WithGetProductsOptions) (*lib.Product, error)
 	HardDelete(ctx context.Context, product *lib.Product) error
 	SoftDelete(ctx context.Context, product *lib.Product) error
@@ -139,9 +144,21 @@ func (r *repo) GetProducts(ctx context.Context, opts ...lib.WithGetProductsOptio
 	return
 }
 
-func (r *repo) SaveProduct(ctx context.Context, product *lib.Product) (*lib.Product, error) {
-	db := r.DB.Save(product)
-	return product, db.Error
+func (r *repo) CreateProduct(ctx context.Context, product *lib.Product) (*lib.Product, error) {
+	err := r.DB.Save(product).Error
+	return product, err
+}
+
+func (r *repo) UpdateProduct(ctx context.Context, product *lib.Product) (*lib.Product, error) {
+
+	err := r.DB.Model(product).Updates(lib.Product{
+		Description: product.Description,
+		Inventory:   product.Inventory,
+		Cost:        product.Cost,
+		Name:        product.Name,
+	}).Error
+
+	return product, err
 }
 
 func (r *repo) HardDelete(ctx context.Context, product *lib.Product) error {
